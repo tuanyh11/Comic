@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('caption')->nullable();
             $table->text('exif')->nullable();
-             $table->morphs('mediable');
+             $table->nullableMorphs('mediable');
             $table->longText('curations')->nullable();
             $table->timestamps();
         });

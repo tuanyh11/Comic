@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "awcodes/filament-curator": "^3.7",
+        "doctrine/dbal": "^4.2",
         "filament/filament": "^3.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
