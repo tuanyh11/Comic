@@ -123,4 +123,12 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+    'providers' => [
+        // Các providers khác...
+        Illuminate\View\ViewServiceProvider::class,
+        Illuminate\Filesystem\FilesystemServiceProvider::class,
+        Plugins\MediaManager\MediaManagerServiceProvider::class,
+    ],
+
 ];
