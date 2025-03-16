@@ -2,25 +2,17 @@
 
 namespace App\Models;
 
+use Awcodes\Curator\Models\Media as ModelsMedia;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Storage;
 
-class Media extends Model
+class Media extends ModelsMedia
 {
-    protected $fillable = [
-        'name',
-        'file_name',
-        'mime_type',
-        'path',
-        'disk',
-        'file_hash',
-        'size',
-        'mediable_id',
-        'mediable_type',
-    ];
-
-     public function mediable(): MorphTo
+      protected static function booted()
     {
-        return $this->morphTo();
+
+        static::deleting(function (Media $media) {
+            Storage::disk('public')->delete($media->path);
+        });
     }
 }
