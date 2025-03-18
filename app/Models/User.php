@@ -5,15 +5,22 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Traits\HasMedia;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use TomatoPHP\FilamentMediaManager\Traits\InteractsWithMediaFolders;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +31,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
+        'google_id'
     ];
 
     /**
@@ -49,8 +58,54 @@ class User extends Authenticatable
         ];
     }
 
-    public function media(): MorphMany
+    public function wallet(): HasOne
     {
-        return $this->morphMany(Media::class, 'mediable');
+        return $this->hasOne(Wallet::class);
     }
+
+    /**
+     * Get the payments made by the user.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the wallet transactions made by the user.
+     */
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    /**
+     * Get the chapters purchased by the user.
+     */
+    public function purchasedChapters(): HasMany
+    {
+        return $this->hasMany(PurchasedChapter::class);
+    }
+
+    /**
+     * Check if the user has purchased a specific chapter.
+     */
+    public function hasPurchased(Chapter $chapter): bool
+    {
+        return $this->purchasedChapters()
+            ->where('chapter_id', $chapter->id)
+            ->exists();
+    }
+
+    // app/Models/Comic.php
+    public function readHistories()
+    {
+        return $this->hasMany(ReadHistory::class);
+    }
+
+    public function notifications()
+{
+    return $this->morphMany(\Illuminate\Notifications\DatabaseNotification::class, 'notifiable')
+                ->orderBy('created_at', 'desc');
+}
 }
