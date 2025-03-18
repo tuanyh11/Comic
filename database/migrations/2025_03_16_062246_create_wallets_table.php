@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->unique()->constrained()->cascadeOnDelete();
             $table->decimal('balance', 10, 2)->default(0);
-            $table->string('currency')->default(CURRENCY::VND);
+            $table->string('currency')->default(CURRENCY::VND->toString());
             $table->timestamps();
         });
     }
