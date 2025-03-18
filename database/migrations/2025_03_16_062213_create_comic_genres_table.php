@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Comic;
+use App\Models\Genre;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,14 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('comic_genres', function (Blueprint $table) {
             $table->id();
-            $table->string('google_id')->nullable(); // For Google OAuth
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+            $table->foreignIdFor(Comic::class)->constrained()->cascadeOnDelete();
+            // Corrected from Genres::class to genre_id for consistency
+            $table->foreignIdFor(Genre::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('comic_genres');
     }
 };

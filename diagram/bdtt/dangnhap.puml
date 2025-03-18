@@ -1,0 +1,57 @@
+@startuml
+hide footbox
+skinparam sequenceMessageAlign center
+skinparam SequenceLifeLineBorderColor grey
+skinparam SequenceLifeLineBorderThickness 1
+
+!define ACTOR_STYLE stereotype actor
+!define BOUNDARY_STYLE stereotype boundary
+!define CONTROL_STYLE stereotype control
+!define DATABASE_STYLE stereotype database
+
+skinparam backgroundColor white
+skinparam title {
+  FontSize 20
+  FontStyle bold
+}
+
+title Biểu đồ trình tự cho chức năng "Đăng nhập"
+
+
+actor "user" as KH 
+participant "Form Đăng Nhập" as FDN 
+participant "Đăng Nhập control" as DNC 
+participant "CSDL" as CSDL 
+
+KH ->> FDN: 1 : Yêu cầu đăng nhập tài khoản
+activate FDN
+
+FDN ->> DNC: 2 : Hiển thị form
+activate DNC
+deactivate FDN
+
+DNC -->> KH: 3 : Yêu cầu nhập tên đăng nhập và mật khẩu
+deactivate DNC
+
+KH ->> DNC: 4 : Nhập tên đăng nhập và mật khẩu
+activate DNC
+
+DNC ->> CSDL: 5 : Gửi thông tin xác thực lên CSDL
+activate CSDL
+
+CSDL ->> CSDL: 6 : Kiểm tra thông tin đăng nhập
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> DNC: 7 : Trả về kết quả xác thực
+deactivate CSDL
+
+alt Đăng nhập thành công
+    DNC -->> KH: 8.1 : Thông báo đăng nhập thành công
+    DNC -->> KH: 8.2 : Chuyển đến trang chính
+else Đăng nhập thất bại
+    DNC -->> KH: 8.3 : Thông báo đăng nhập thất bại
+    DNC -->> KH: 8.4 : Yêu cầu nhập lại thông tin
+end
+deactivate DNC
+@enduml

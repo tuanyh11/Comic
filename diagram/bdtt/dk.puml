@@ -1,0 +1,51 @@
+@startuml
+hide footbox
+skinparam sequenceMessageAlign center
+skinparam SequenceLifeLineBorderColor grey
+skinparam SequenceLifeLineBorderThickness 1
+
+!define ACTOR_STYLE stereotype actor
+!define BOUNDARY_STYLE stereotype boundary
+!define CONTROL_STYLE stereotype control
+!define DATABASE_STYLE stereotype database
+
+skinparam backgroundColor white
+skinparam title {
+  FontSize 20
+  FontStyle bold
+}
+
+title Biểu đồ trình tự cho chức năng "Đăng ký"
+
+
+actor "user" as KH 
+participant "Form Đăng Ký" as FDK 
+participant "Đăng Ký control" as DKC 
+participant "CSDL" as CSDL 
+
+KH ->> FDK: 1 : Yêu cầu đăng ký tài khoản
+activate FDK
+
+FDK ->> DKC: 2 : Hiển thị form
+activate DKC
+deactivate FDK
+
+DKC -->> KH: 3 : Yêu cầu nhập thông tin cá nhân
+deactivate DKC
+
+KH ->> DKC: 4 : Nhập thông tin cá nhân
+activate DKC
+
+DKC ->> CSDL: 5 : Gửi thông tin lên CSDL
+activate CSDL
+
+CSDL ->> CSDL: 6 : Kiểm tra thông tin
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> DKC: 7 : Trả về kết quả
+deactivate CSDL
+
+DKC -->> KH: 8 : Phản hồi
+deactivate DKC
+@enduml

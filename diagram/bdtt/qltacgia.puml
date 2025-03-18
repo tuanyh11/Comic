@@ -1,0 +1,120 @@
+@startuml
+hide footbox
+skinparam sequenceMessageAlign center
+skinparam SequenceLifeLineBorderColor grey
+skinparam SequenceLifeLineBorderThickness 1
+
+!define ACTOR_STYLE stereotype actor
+!define BOUNDARY_STYLE stereotype boundary
+!define CONTROL_STYLE stereotype control
+!define DATABASE_STYLE stereotype database
+
+skinparam backgroundColor white
+skinparam title {
+  FontSize 20
+  FontStyle bold
+}
+
+title Biểu đồ trình tự cho chức năng "Quản lý tác giả"
+
+
+actor "Admin" as AD 
+participant "Trang quản lý tác giả" as TQL 
+participant "Quản lý tác giả control" as QLC 
+participant "CSDL" as CSDL 
+
+AD ->> TQL: 1 : Truy cập trang quản lý tác giả
+activate TQL
+
+TQL ->> QLC: 2 : Yêu cầu danh sách tác giả
+activate QLC
+deactivate TQL
+
+QLC ->> CSDL: 3 : Truy vấn danh sách tác giả
+activate CSDL
+
+
+
+CSDL -->> QLC: 5 : Trả về danh sách tác giả
+deactivate CSDL
+
+QLC -->> AD: 6 : Hiển thị danh sách tác giả
+deactivate QLC
+
+AD ->> QLC: 7 : Chọn thêm tác giả mới
+activate QLC
+
+QLC -->> AD: 8 : Hiển thị form thêm tác giả
+
+AD ->> QLC: 9 : Nhập thông tin tác giả mới
+
+QLC ->> CSDL: 10 : Lưu thông tin tác giả mới
+activate CSDL
+
+CSDL ->> CSDL: 11 : Kiểm tra
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> QLC: 12 : Xác nhận thêm thành công
+deactivate CSDL
+
+QLC -->> AD: 13 : Thông báo thêm tác giả thành công
+deactivate QLC
+
+AD ->> QLC: 14 : Chọn sửa thông tin tác giả
+activate QLC
+
+QLC ->> CSDL: 15 : Truy vấn thông tin tác giả
+activate CSDL
+
+
+CSDL -->> QLC: 17 : Trả về thông tin tác giả
+deactivate CSDL
+
+QLC -->> AD: 18 : Hiển thị form sửa tác giả
+
+AD ->> QLC: 19 : Cập nhật thông tin tác giả
+
+QLC ->> CSDL: 20 : Lưu thông tin đã cập nhật
+activate CSDL
+
+CSDL ->> CSDL: 21 : Kiểm tra
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> QLC: 22 : Xác nhận cập nhật thành công
+deactivate CSDL
+
+QLC -->> AD: 23 : Thông báo cập nhật thành công
+deactivate QLC
+
+AD ->> QLC: 24 : Chọn xóa tác giả
+activate QLC
+
+QLC -->> AD: 25 : Yêu cầu xác nhận xóa
+
+AD ->> QLC: 26 : Xác nhận xóa tác giả
+
+QLC ->> CSDL: 27 : Xóa thông tin tác giả
+activate CSDL
+
+
+CSDL -->> QLC: 29 : Xác nhận xóa thành công
+deactivate CSDL
+
+QLC -->> AD: 30 : Thông báo xóa tác giả thành công
+deactivate QLC
+
+AD ->> QLC: 31 : Nhập thông tin tìm kiếm
+activate QLC
+
+QLC ->> CSDL: 32 : Truy vấn tìm kiếm tác giả
+activate CSDL
+
+CSDL -->> QLC: 34 : Trả về kết quả tìm kiếm
+deactivate CSDL
+
+QLC -->> AD: 35 : Hiển thị kết quả tìm kiếm
+deactivate QLC
+
+@enduml

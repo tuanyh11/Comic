@@ -1,0 +1,116 @@
+@startuml
+hide footbox
+skinparam sequenceMessageAlign center
+skinparam SequenceLifeLineBorderColor grey
+skinparam SequenceLifeLineBorderThickness 1
+
+!define ACTOR_STYLE stereotype actor
+!define BOUNDARY_STYLE stereotype boundary
+!define CONTROL_STYLE stereotype control
+!define DATABASE_STYLE stereotype database
+
+skinparam backgroundColor white
+skinparam title {
+  FontSize 20
+  FontStyle bold
+}
+
+title Biểu đồ trình tự cho chức năng "Quản lý chương"
+
+
+actor "Admin" as AD 
+participant "Trang quản lý chương" as TQL 
+participant "Quản lý chương control" as QLC 
+participant "CSDL" as CSDL 
+
+AD ->> TQL: 1 : Truy cập trang quản lý chương
+activate TQL
+
+TQL ->> QLC: 2 : Yêu cầu danh sách chương
+activate QLC
+deactivate TQL
+
+QLC ->> CSDL: 3 : Truy vấn danh sách chương
+activate CSDL
+
+CSDL -->> QLC: 4 : Trả về danh sách chương
+deactivate CSDL
+
+QLC -->> AD: 5 : Hiển thị danh sách chương
+deactivate QLC
+
+AD ->> QLC: 6 : Chọn thêm chương mới
+activate QLC
+
+QLC -->> AD: 7 : Hiển thị form thêm chương
+
+AD ->> QLC: 8 : Nhập thông tin chương mới
+
+QLC ->> CSDL: 9 : Lưu thông tin chương mới
+activate CSDL
+
+CSDL ->> CSDL: 10 : Kiểm tra
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> QLC: 11 : Xác nhận thêm thành công
+deactivate CSDL
+
+QLC -->> AD: 12 : Thông báo thêm chương thành công
+deactivate QLC
+
+AD ->> QLC: 13 : Chọn sửa thông tin chương
+activate QLC
+
+QLC ->> CSDL: 14 : Truy vấn thông tin chương
+activate CSDL
+
+CSDL -->> QLC: 15 : Trả về thông tin chương
+deactivate CSDL
+
+QLC -->> AD: 16 : Hiển thị form sửa chương
+
+AD ->> QLC: 17 : Cập nhật thông tin chương
+
+QLC ->> CSDL: 18 : Lưu thông tin đã cập nhật
+activate CSDL
+
+CSDL ->> CSDL: 19 : Kiểm tra
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> QLC: 20 : Xác nhận cập nhật thành công
+deactivate CSDL
+
+QLC -->> AD: 21 : Thông báo cập nhật thành công
+deactivate QLC
+
+AD ->> QLC: 22 : Chọn xóa chương
+activate QLC
+
+QLC -->> AD: 23 : Yêu cầu xác nhận xóa
+
+AD ->> QLC: 24 : Xác nhận xóa chương
+
+QLC ->> CSDL: 25 : Xóa thông tin chương
+activate CSDL
+
+CSDL -->> QLC: 26 : Xác nhận xóa thành công
+deactivate CSDL
+
+QLC -->> AD: 27 : Thông báo xóa chương thành công
+deactivate QLC
+
+AD ->> QLC: 28 : Nhập thông tin tìm kiếm
+activate QLC
+
+QLC ->> CSDL: 29 : Truy vấn tìm kiếm chương
+activate CSDL
+
+CSDL -->> QLC: 30 : Trả về kết quả tìm kiếm
+deactivate CSDL
+
+QLC -->> AD: 31 : Hiển thị kết quả tìm kiếm
+deactivate QLC
+
+@enduml

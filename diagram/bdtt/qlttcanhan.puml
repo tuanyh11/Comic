@@ -1,0 +1,125 @@
+@startuml
+hide footbox
+skinparam sequenceMessageAlign center
+skinparam lifelineStrategy dotted
+skinparam SequenceLifeLineBorderColor grey
+skinparam SequenceLifeLineBorderThickness 1
+
+!define ACTOR_STYLE stereotype actor
+!define BOUNDARY_STYLE stereotype boundary
+!define CONTROL_STYLE stereotype control
+!define DATABASE_STYLE stereotype database
+
+skinparam backgroundColor white
+skinparam title {
+  FontSize 20
+  FontStyle bold
+}
+
+title Biểu đồ trình tự cho chức năng "Quản lý thông tin cá nhân"
+
+
+actor "Người dùng" as ND 
+participant "Trang cá nhân" as TCP 
+participant "Quản lý thông tin cá nhân control" as QTCP 
+participant "CSDL" as CSDL 
+
+' Chức năng xem thông tin cá nhân
+ND ->> TCP: 1 : Truy cập trang cá nhân
+activate TCP
+
+TCP ->> QTCP: 2 : Yêu cầu thông tin cá nhân
+activate QTCP
+deactivate TCP
+
+QTCP ->> CSDL: 3 : Truy vấn thông tin cá nhân
+activate CSDL
+
+CSDL -->> QTCP: 4 : Trả về thông tin cá nhân
+deactivate CSDL
+
+QTCP -->> ND: 5 : Hiển thị thông tin cá nhân
+deactivate QTCP
+
+' Chức năng sửa thông tin cá nhân
+ND ->> QTCP: 6 : Chọn sửa thông tin cá nhân
+activate QTCP
+
+QTCP -->> ND: 7 : Hiển thị form sửa thông tin
+
+ND ->> QTCP: 8 : Cập nhật thông tin cá nhân
+
+QTCP ->> CSDL: 9 : Lưu thông tin đã cập nhật
+activate CSDL
+
+CSDL ->> CSDL: 10 : Kiểm tra
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> QTCP: 11 : Xác nhận cập nhật thành công
+deactivate CSDL
+
+QTCP -->> ND: 12 : Thông báo cập nhật thành công
+deactivate QTCP
+
+' Chức năng xem thông báo
+ND ->> QTCP: 13 : Chọn xem thông báo
+activate QTCP
+
+QTCP ->> CSDL: 14 : Truy vấn danh sách thông báo
+activate CSDL
+
+CSDL -->> QTCP: 15 : Trả về danh sách thông báo
+deactivate CSDL
+
+QTCP -->> ND: 16 : Hiển thị danh sách thông báo
+deactivate QTCP
+
+' Chức năng quản lý ví - Xem số dư
+ND ->> QTCP: 17 : Chọn quản lý ví
+activate QTCP
+
+QTCP ->> CSDL: 18 : Truy vấn thông tin ví
+activate CSDL
+
+CSDL -->> QTCP: 19 : Trả về thông tin số dư
+deactivate CSDL
+
+QTCP -->> ND: 20 : Hiển thị số dư ví
+deactivate QTCP
+
+' Chức năng quản lý ví - Nạp tiền
+ND ->> QTCP: 21 : Chọn nạp tiền
+activate QTCP
+
+QTCP -->> ND: 22 : Hiển thị form nạp tiền
+
+ND ->> QTCP: 23 : Nhập số tiền và phương thức thanh toán
+
+QTCP ->> CSDL: 24 : Gửi yêu cầu nạp tiền
+activate CSDL
+
+CSDL ->> CSDL: 25 : Xử lý giao dịch
+activate CSDL #DarkSalmon
+deactivate CSDL
+
+CSDL -->> QTCP: 26 : Xác nhận giao dịch thành công
+deactivate CSDL
+
+QTCP -->> ND: 27 : Thông báo nạp tiền thành công
+deactivate QTCP
+
+' Chức năng quản lý ví - Xem lịch sử giao dịch
+ND ->> QTCP: 28 : Chọn xem lịch sử giao dịch
+activate QTCP
+
+QTCP ->> CSDL: 29 : Truy vấn lịch sử giao dịch
+activate CSDL
+
+CSDL -->> QTCP: 30 : Trả về lịch sử giao dịch
+deactivate CSDL
+
+QTCP -->> ND: 31 : Hiển thị lịch sử giao dịch
+deactivate QTCP
+
+@enduml
