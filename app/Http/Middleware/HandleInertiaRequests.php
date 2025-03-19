@@ -34,7 +34,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         if($request->user()) {
-            $request->user()->load('avatar');
+            $request->user()->load('media');
         }
         return [
             ...parent::share($request),

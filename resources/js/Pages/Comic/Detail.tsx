@@ -82,7 +82,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                             <div className="book-container py-5">
                                 <div className="book relative">
                                     <img
-                                        src={comic.thumbnail.url}
+                                        src={comic.media[0].media.url}
                                         alt="Story Cover"
                                         className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                                     />

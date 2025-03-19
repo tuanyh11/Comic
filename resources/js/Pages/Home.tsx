@@ -120,7 +120,7 @@ const Home: FC<{
                                 <div className="book-container py-4">
                                     <div className="book">
                                         <img
-                                            src={story.thumbnail.url}
+                                            src={story.media[0].media.url}
                                             alt={story.title}
                                             className="h-56 w-full object-cover"
                                         />

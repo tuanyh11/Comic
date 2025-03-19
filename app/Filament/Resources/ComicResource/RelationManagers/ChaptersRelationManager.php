@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ComicResource\RelationManagers;
 
+use App\Filament\Resources\ChapterResource;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -18,9 +19,7 @@ class ChaptersRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->maxLength(255),
+                ChapterResource::formSchema()
             ]);
     }
 

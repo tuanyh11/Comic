@@ -10,7 +10,6 @@ import 'swiper/css/pagination';
 import { Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-
 interface Props {
     canLogin: boolean;
     canRegister: boolean;
@@ -30,11 +29,6 @@ export default function Welcome({ featuredComic, comicList }: Props) {
         null,
     );
 
-    console.log('====================================');
-    console.log(comicList
-
-    );
-    console.log('====================================');
     // Set initial active slide index
     const initialSlideIndex = comicList.findIndex(
         (comic) => comic.id === featuredComic.id,
@@ -107,7 +101,7 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                 <div className="relative h-full">
                     {/* Background Image with fade transition */}
                     <div className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-700">
-                        {currentComic.media.length > 0 ? (
+                        {currentComic?.media?.length > 0 ? (
                             <div className="relative h-full w-full">
                                 <img
                                     src={currentComic.media[0].media.url}
@@ -330,12 +324,14 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                                         }
                                     >
                                         <div className="relative h-60 bg-gradient-to-br from-blue-900 to-pink-900 shadow-lg">
-                                            {comic.thumbnail ? (
+                                            {comic?.media?.length > 0 ? (
                                                 <img
-                                                    src={comic..url}
+                                                    src={
+                                                        comic.media[0].media.url
+                                                    }
                                                     alt={
-                                                        comic.thumbnail.alt ||
-                                                        comic.title
+                                                        comic.media[0].media
+                                                            .alt || comic.title
                                                     }
                                                     className={`${
                                                         selectedComicId ===

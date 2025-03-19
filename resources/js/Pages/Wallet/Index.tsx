@@ -289,7 +289,7 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                 </h2>
                             </div>
 
-                            {transactions && transactions.data.length > 0 ? (
+                            {transactions && transactions?.data?.length > 0 ? (
                                 <div className="mt-4 overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200 overflow-hidden rounded-lg">
                                         <thead className="bg-gray-50">
