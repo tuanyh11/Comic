@@ -9,41 +9,40 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Illuminate\Database\Eloquent\Builder;
 
 class AuthorResource extends Resource
 {
     protected static ?string $model = Author::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-
-    protected static ?string $navigationGroup = 'Quản lý Nội dung';
-
-    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    
+    protected static ?string $navigationGroup = 'Content Management';
+    
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Thông tin tác giả')
+                Forms\Components\Section::make('Author Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')
-                            ->label('Tên tác giả')
                             ->required()
                             ->maxLength(255),
-                        
+                
                         Forms\Components\TextInput::make('stage_name')
-                            ->label('Bút danh')
-                            ->required()
                             ->maxLength(255),
-                        
+                
+                        CuratorPicker::make('media_id')
+                            ->label('Profile Image')
+                            ->relationship('media', 'id'),
+                
                         Forms\Components\Textarea::make('description')
-                            ->label('Mô tả')
-                            ->required()
                             ->maxLength(65535)
                             ->columnSpanFull(),
-                    ])
-                    ->columns(2),
+                    ])->columns(2),
             ]);
     }
 
@@ -52,38 +51,34 @@ class AuthorResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Tên tác giả')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 
                 Tables\Columns\TextColumn::make('stage_name')
-                    ->label('Bút danh')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 
                 Tables\Columns\TextColumn::make('comics_count')
-                    ->label('Số truyện')
                     ->counts('comics')
+                    ->label('Comics')
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Ngày tạo')
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Cập nhật lần cuối')
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('has_comics')
+                    ->query(fn (Builder $query): Builder => $query->has('comics'))
+                    ->label('Has Comics'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -95,7 +90,7 @@ class AuthorResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AuthorResource\RelationManagers\ComicsRelationManager::class,
         ];
     }
 
@@ -104,6 +99,7 @@ class AuthorResource extends Resource
         return [
             'index' => Pages\ListAuthors::route('/'),
             'create' => Pages\CreateAuthor::route('/create'),
+            'view' => Pages\ViewAuthor::route('/{record}'),
             'edit' => Pages\EditAuthor::route('/{record}/edit'),
         ];
     }

@@ -24,4 +24,9 @@ class Author extends Model
     {
         return $this->hasMany(Comic::class);
     }
+
+     public function media()
+    {
+        return $this->morphOne(Media::class, 'mediable');
+    }
 }
