@@ -1,6 +1,6 @@
 import DefaultLayout from '@/Layouts/DefaultLayout';
 import { LaravelPagination, Transaction } from '@/types/custom';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowDownCircle,
     ArrowUpCircle,
@@ -12,14 +12,15 @@ import {
     PlusCircle,
     ShoppingCart,
 } from 'lucide-react';
-import { FC, useState } from 'react';
+import { FC } from 'react';
 
 const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
     transactions,
 }) => {
     const { wallet } = usePage().props;
-    const [amount, setAmount] = useState('');
-
+    const form = useForm({
+        amount: '',
+    });
     // Function to format date
     const formatDate = (dateString: string) => {
         const options: Intl.DateTimeFormatOptions = {
@@ -32,7 +33,6 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
         return new Date(dateString).toLocaleDateString('vi-VN', options);
     };
 
-    // Function to get transaction icon based on type
     const getTransactionIcon = (
         type: 'deposit' | 'withdrawal' | 'purchase',
     ) => {
@@ -163,14 +163,17 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                 </div>
 
                                 <form
-                                    action={route(
-                                        'payment.vnpay.create-wallet-payment',
-                                    )}
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        form.post(
+                                            route(
+                                                'payment.vnpay.create-wallet-payment',
+                                            ),
+                                        );
+                                    }}
                                     method="POST"
                                     className="space-y-4"
                                 >
-                                    <input type="hidden" name="_token" />
-
                                     <div>
                                         <label
                                             htmlFor="amount"
@@ -188,9 +191,12 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                                 id="amount"
                                                 min="1"
                                                 step="1"
-                                                value={amount}
+                                                value={form.data.amount}
                                                 onChange={(e) =>
-                                                    setAmount(e.target.value)
+                                                    form.setData(
+                                                        'amount',
+                                                        e.target.value,
+                                                    )
                                                 }
                                                 className="block w-full rounded-lg border-gray-300 pl-10 pr-12 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                 placeholder="10,000"
@@ -202,13 +208,15 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                                 </span>
                                             </div>
                                         </div>
-                                        {amount && (
+                                        {form.data.amount && (
                                             <p className="mt-1 text-sm text-gray-500">
                                                 ={' '}
                                                 {new Intl.NumberFormat(
                                                     'vi-VN',
                                                 ).format(
-                                                    parseFloat(amount),
+                                                    parseFloat(
+                                                        form.data.amount,
+                                                    ),
                                                 )}{' '}
                                                 {wallet.currency}
                                             </p>
@@ -221,10 +229,14 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                                 key={value}
                                                 type="button"
                                                 onClick={() =>
-                                                    setAmount(value.toString())
+                                                    form.setData(
+                                                        'amount',
+                                                        value.toString(),
+                                                    )
                                                 }
                                                 className={`rounded-lg border p-3 text-center transition-all ${
-                                                    amount === value.toString()
+                                                    form.data.amount ===
+                                                    value.toString()
                                                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                                                         : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                                                 }`}

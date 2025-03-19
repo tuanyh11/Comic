@@ -17,6 +17,9 @@ import { useEffect, useState } from 'react';
 
 const ProfileForm = () => {
     const { user } = usePage().props.auth;
+    console.log('====================================');
+    console.log(user);
+    console.log('====================================');
     const [photoPreview, setPhotoPreview] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -194,7 +197,7 @@ const ProfileForm = () => {
                                     />
                                 ) : user?.avatar ? (
                                     <img
-                                        src={user.avatar.url}
+                                        src={`storage/${user?.avatar}`}
                                         alt="Current avatar"
                                         className="h-full w-full object-cover"
                                     />

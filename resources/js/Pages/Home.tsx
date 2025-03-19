@@ -21,9 +21,6 @@ const Home: FC<{
     const [activeTab, setActiveTab] = useState('for-you');
     const comicData = comics?.data;
     const genreData = genres;
-    console.log('====================================');
-    console.log(comics.data);
-    console.log('====================================');
     return (
         <DefaultLayout>
             <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-blue-50 to-pink-50">
@@ -32,7 +29,7 @@ const Home: FC<{
                     {/* Background Image with Overlay */}
                     <div className="absolute inset-0 z-0">
                         <img
-                            src="/storage/media/ce038394-d8d7-4d00-9438-0cdbab7c8aa4.jpeg"
+                            src="/storage/media/bb2f14e1-a9d9-46d7-912b-a6d0ae19409b.jpeg"
                             alt="Hero Background"
                             className="h-full w-full object-cover"
                         />

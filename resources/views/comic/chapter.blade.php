@@ -27,7 +27,7 @@
 <body class="font-sans antialiased">
 
     <div  class="_df_book"  webgl="true" backgroundcolor="teal"
-        source={{$chapter->media->url}} id="df_manual_book">
+        source={{$chapter->media[0]->media->url}} id="df_manual_book">
     </div>
 
 </body>

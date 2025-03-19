@@ -177,7 +177,11 @@ const Header = () => {
                         href="/"
                         className="text-xl font-bold text-white md:text-2xl"
                     >
-                        Wattpad
+                        <img
+                            className="w-40"
+                            src={`/storage/images/logo.png`}
+                            alt=""
+                        />
                     </Link>
                 </div>
 
@@ -259,11 +263,14 @@ const Header = () => {
                                                                     );
                                                                 }}
                                                             >
-                                                                {comic.thumbnail && (
+                                                                {comic?.media[0]
+                                                                    ?.media
+                                                                    ?.url && (
                                                                     <img
                                                                         src={
                                                                             comic
-                                                                                .thumbnail
+                                                                                .media[0]
+                                                                                .media
                                                                                 .url
                                                                         }
                                                                         alt={

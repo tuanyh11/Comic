@@ -60,7 +60,7 @@ class ChapterResource extends Resource
 
                             CuratorPicker::make('document_ids')
                                 ->multiple()
-                                ->label('Thumbnail Image')
+                                ->label('Content')
                                 ->relationship('media', 'id')
                                 ->orderColumn('order') // Optional: Rename the order column if needed
                                 ->typeColumn('type') // Optional: Rename the type column if needed

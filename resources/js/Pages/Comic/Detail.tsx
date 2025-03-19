@@ -2,7 +2,6 @@ import RecommendedComics from '@/Components/UI/RecommendedComics';
 import DefaultLayout from '@/Layouts/DefaultLayout';
 import { Comic } from '@/types/custom';
 import { Link, router } from '@inertiajs/react';
-import axios from 'axios';
 import { BookOpen, HeartIcon, MessagesSquare, User } from 'lucide-react';
 import { FC, useState } from 'react';
 
@@ -31,23 +30,12 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                     `Bạn có muốn mua chapter này với giá ${chapter.pricing} VND không?`,
                 )
             ) {
-                try {
-                    // Gọi API để mua chapter bằng số dư ví
-                    const response = await axios.post(
-                        `/chapters/${chapter.id}/purchase`,
-                    );
-                    if (response.data.success) {
-                        // Nếu mua thành công, chuyển đến trang chapter
-                        router.visit(
-                            `/comic/${comic.id}/chapter/${chapter.id}`,
-                        );
-                    }
-                } catch (error) {
-                    alert(
-                        'Có lỗi xảy ra khi mua chapter. Vui lòng thử lại sau.',
-                    );
-                    console.error(error);
-                }
+                router.post(
+                    route('chapter.purchase-with-wallet', {
+                        slug: comic.slug, // Sai: Đang dùng ID thay vì slug
+                        chapter_id: chapter.id,
+                    }),
+                );
             }
         } else {
             // Nếu không đủ tiền, chuyển đến trang nạp tiền

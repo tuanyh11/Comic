@@ -29,7 +29,7 @@ export const CommentItem: FC<CommentItemProps> = ({
     const [replyText, setReplyText] = useState('');
     const [currentReplyPage, setCurrentReplyPage] = useState<number>(1);
     const [isLiked, setIsLiked] = useState(false);
-
+ 
     const handleReply = () => {
         if (replyText.trim()) {
             onReply(comment.id, replyText);
@@ -132,7 +132,7 @@ export const CommentItem: FC<CommentItemProps> = ({
                             {hasMoreReplies && (
                                 <button
                                     onClick={handleLoadMoreReplies}
-                                    className="mt-2 text-xs text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                                    className="mt-2 text-xs text-white transition-colors hover:underline"
                                 >
                                     Xem thêm {remainingReplies} phản hồi...
                                 </button>
@@ -144,7 +144,7 @@ export const CommentItem: FC<CommentItemProps> = ({
                     {replies.length === 0 && totalRepliesCount > 0 && (
                         <button
                             onClick={() => loadMoreReplies(comment.id, 1)}
-                            className="mt-2 flex items-center gap-1 pl-6 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                            className="mt-2 flex items-center gap-1 pl-6 text-xs text-white hover:underline"
                         >
                             <MessageCircle size={12} />
                             Xem {totalRepliesCount} phản hồi...

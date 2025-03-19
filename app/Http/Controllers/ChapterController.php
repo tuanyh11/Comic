@@ -232,47 +232,39 @@ class ChapterController extends Controller
     /**
      * Mua chapter bằng số dư ví
      */
-    public function purchaseWithWallet(Request $request, $chapter_id)
-    {
-        if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để mua chapter'
-            ], 401);
-        }
-
-        $user = Auth::user();
-        $chapter = Chapter::findOrFail($chapter_id);
-
-        // Kiểm tra xem chapter có phải nội dung trả phí không
-        if (!$chapter->isPaidContent()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Chapter này là nội dung miễn phí'
-            ]);
-        }
-
-        // Kiểm tra xem người dùng đã mua chapter này chưa
-        if ($chapter->isAccessibleBy($user)) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Bạn đã mua chapter này rồi'
-            ]);
-        }
-
-        // Sử dụng PaymentService để mua chapter
-        try {
-            $purchase = $this->paymentService->purchaseChapter($user, $chapter);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Mua chapter thành công'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
-        }
+public function purchaseWithWallet($slug, $chapter_id)
+{
+    if (!Auth::check()) {
+        return redirect()->route('login');
     }
+
+    $user = Auth::user();
+    $chapter = Chapter::findOrFail($chapter_id);
+    $comic = $chapter->comic;
+
+    // Kiểm tra xem chapter có phải nội dung trả phí không
+    if (!$chapter->isPaidContent()) {
+        return redirect()->back()->with('error', 'Chapter này là nội dung miễn phí');
+    }
+
+    // Kiểm tra xem người dùng đã mua chapter này chưa
+    if ($chapter->isAccessibleBy($user)) {
+        return redirect()->route('chapter.show', [
+            'slug' => $comic->slug,
+            'chapter_id' => $chapter->id
+        ])->with('info', 'Bạn đã mua chapter này rồi');
+    }
+
+    // Sử dụng PaymentService để mua chapter
+    try {
+        $purchase = $this->paymentService->purchaseChapter($user, $chapter);
+
+        return redirect()->route('chapter.show', [
+            'slug' => $comic->slug,
+            'chapter_id' => $chapter->id
+        ])->with('success', 'Mua chapter thành công');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage());
+    }
+}
 }

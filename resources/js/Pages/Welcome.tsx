@@ -119,11 +119,15 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                     <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-blue-900/90 via-black/70 to-transparent"></div>
 
                     {/* Top Navigation Bar */}
-                    <div className="sticky left-0 right-0 top-0 z-30">
+                    <div className="sticky left-0 right-0 top-0 z-40">
                         <div className="container mx-auto flex items-center justify-between p-4">
                             <div className="flex items-center">
                                 <h2 className="text-xl font-bold text-white">
-                                    Wattpad
+                                    <img
+                                        className="w-40"
+                                        src={`/storage/images/logo.png`}
+                                        alt=""
+                                    />
                                 </h2>
                             </div>
                             <div className="flex items-center space-x-4">
@@ -247,7 +251,7 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                             currentComic.description.length > 150 && (
                                 <button
                                     onClick={toggleDescription}
-                                    className="mb-6 flex items-center text-sm text-blue-300 transition-colors hover:text-blue-200"
+                                    className="mb-6 flex items-center text-sm text-white transition-colors hover:text-blue-200"
                                 >
                                     {showFullDescription
                                         ? 'Ẩn bớt'
@@ -266,12 +270,12 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                             )}
 
                         <div className="mb-12 flex flex-wrap gap-4">
-                            <button className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10">
+                            {/* <button className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10">
                                 <BookOpen className="h-5 w-5" />
                                 Đọc thử
-                            </button>
+                            </button> */}
                             <Link
-                                href="/home"
+                                href="/comic"
                                 className="flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-pink-500 px-6 py-3 text-white shadow-lg transition-all hover:from-blue-600 hover:to-pink-600 hover:shadow-xl"
                             >
                                 <Play className="h-5 w-5" />

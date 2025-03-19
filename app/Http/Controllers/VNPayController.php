@@ -37,10 +37,9 @@ class VNPayController extends Controller
         
         try {
             $paymentUrl = $this->vnpayService->createPaymentUrlForWallet($user, $amount);
-            dump($paymentUrl);
-            // return response()->json([
-            //     'url' => $paymentUrl
-            // ]);
+            return Inertia::render('Redirect', [
+                'url' => $paymentUrl
+            ]);
         } catch (\Exception $e) {
             Log::error('VNPay payment creation failed: ' . $e->getMessage());
             return back()->withErrors(['message' => 'Failed to create payment: ' . $e->getMessage()]);

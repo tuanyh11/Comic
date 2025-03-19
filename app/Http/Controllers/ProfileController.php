@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Media;
+use App\Models\MediaItem;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -23,21 +24,21 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
-       $user = $request->user()->toArray();
-        $avatar = User::find($user['id'])->with('avatar')->get();
+        $user = $request->user();
+        // Eagerly load the media relationship
+        $user->load('media');
 
-        // dd($avatar);
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
-            'test' => $avatar
+            'user' => $user
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-  public function update(Request $request)
+    public function update(Request $request)
     {
         $user = Auth::user();
 
@@ -55,6 +56,7 @@ class ProfileController extends Controller
             // Generate a unique name
             $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
             $extension = $file->getClientOriginalExtension();
+            
             // Store the file
             $path = $file->storeAs('avatars', $name, 'public');
             
@@ -74,10 +76,21 @@ class ProfileController extends Controller
             $media->alt = $user->name . ' avatar';
             $media->width = $width;
             $media->height = $height;
-              $media->ext = $extension; 
+            $media->ext = $extension; 
             $media->save();
 
-            $user->avatar = $media->id;
+            // Check if the user already has a media item for avatar
+            // If yes, detach previous avatar
+            $user->media()->delete();
+
+            // Create a new media item and attach it to the user
+            $mediaItem = new MediaItem();
+            $mediaItem->media_id = $media->id;
+            $mediaItem->mediable_id = $user->id;
+            $mediaItem->mediable_type = User::class;
+            $mediaItem->order = 1; // First/primary media item
+            $mediaItem->type = 'avatar'; // Set the type column to 'avatar'
+            $mediaItem->save();
         }
 
         $user->name = $validated['name'];
@@ -91,6 +104,7 @@ class ProfileController extends Controller
 
         return redirect()->back()->with('success', 'Profile updated successfully.');
     }
+
     /**
      * Delete the user's account.
      */
@@ -113,12 +127,12 @@ class ProfileController extends Controller
     }
 
     public function logout(Request $request): RedirectResponse
-{
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-    
-    return Redirect::to('/login');
-}
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return Redirect::to('/login');
+    }
     
 }

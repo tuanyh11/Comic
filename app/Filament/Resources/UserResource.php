@@ -91,7 +91,7 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail_url')
+                Tables\Columns\ImageColumn::make('media.media.url')
                     ->label('Avatar')
                     ->circular()
                     ->defaultImageUrl(fn () => asset('images/user-placeholder.jpg')),

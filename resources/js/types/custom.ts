@@ -33,7 +33,10 @@ export type User = {
     name: string;
     email: string;
     email_verified_at?: string;
-    avatar: Media;
+    media: {
+        media: Media;
+    }[];
+    avatar?: string;
 };
 
 export type Genre = {

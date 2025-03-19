@@ -25,7 +25,7 @@ class CommentController extends Controller
         $parentComments = $chapter->comments()
             ->whereNull('parent_id')
             ->with(['user' => function ($query) {
-                $query->select('id', 'name', 'avatar')->with('avatar');
+                $query->select('id', 'name')->with('media');
             }])
             ->withCount('replies') // Đếm số lượng replies cho mỗi comment
             ->orderBy('created_at', 'desc')
@@ -45,7 +45,7 @@ class CommentController extends Controller
         // Get replies with pagination
         $replies = Comment::where('parent_id', $comment_id)
             ->with(['user' => function ($query) {
-                $query->select('id', 'name', 'avatar')->with('avatar');
+                $query->select('id', 'name')->with('media');
             }])
             ->orderBy('created_at', 'asc') // Show oldest replies first
             ->paginate(3); // Smaller page size for replies
@@ -73,14 +73,14 @@ class CommentController extends Controller
             'comic_id' => $chapter->comic_id
         ]);
 
-        // Lấy user hiện tại với avatar đầy đủ thay vì chỉ load basic user
-        // Cách 2: Load User với select nhưng phải đảm bảo có trường avatar_id (foreign key)
-        $currentUser = User::select('id', 'name', 'avatar')
-            ->with('avatar')  // Đảm bảo trường 'avatar' là foreign key đến bảng media
+        // Lấy user hiện tại với media đầy đủ
+        $currentUser = User::select('id', 'name')
+            ->with('media')
             ->find(Auth::id());
 
-        // Gán user đã load đầy đủ avatar vào comment
+        // Gán user đã load đầy đủ media vào comment
         $comment->setRelation('user', $currentUser);
+        
         // Xử lý events và notifications
         if ($comment->parent_id) {
             // Get the original comment's user
@@ -104,28 +104,28 @@ class CommentController extends Controller
             $comment->parent_replies_count = $repliesCount;
         }
 
-    return response()->json([
+        return response()->json([
             'comment' => $comment,
             'message' => 'Comment posted successfully'
         ], 201);
     }
 
     public function show($comment_id)
-{
-    try {
-        // Tìm comment với ID cụ thể và load quan hệ user kèm avatar
-        $comment = Comment::with(['user' => function ($query) {
-            $query->select('id', 'name', 'avatar')->with('avatar');
-        }])
-        ->findOrFail($comment_id);
-        
-        // Trả về comment dưới dạng JSON response
-        return response()->json($comment);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Comment not found',
-            'error' => $e->getMessage()
-        ], 404);
+    {
+        try {
+            // Tìm comment với ID cụ thể và load quan hệ user kèm media
+            $comment = Comment::with(['user' => function ($query) {
+                $query->select('id', 'name')->with('media');
+            }])
+            ->findOrFail($comment_id);
+            
+            // Trả về comment dưới dạng JSON response
+            return response()->json($comment);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Comment not found',
+                'error' => $e->getMessage()
+            ], 404);
+        }
     }
-}
 }
