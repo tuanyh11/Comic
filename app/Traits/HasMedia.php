@@ -3,13 +3,14 @@
 namespace App\Traits;
 
 use App\Models\Media;
+use App\Models\MediaItem;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-trait HasMedia
+trait HasMedia 
 {
-    public function media(): MorphMany
+    public function media()
     {
-        return $this->morphMany(Media::class, 'mediable');
+          return $this->morphMany(MediaItem::class, 'mediable')->orderBy('order');
     }
 }
 

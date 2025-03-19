@@ -17,9 +17,9 @@ class AuthorResource extends Resource
     protected static ?string $model = Author::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    
+
     protected static ?string $navigationGroup = 'Content Management';
-    
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -31,14 +31,18 @@ class AuthorResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                
+
                         Forms\Components\TextInput::make('stage_name')
                             ->maxLength(255),
-                
-                        CuratorPicker::make('media_id')
+
+                        CuratorPicker::make('document_ids')
+                            ->multiple()
                             ->label('Profile Image')
-                            ->relationship('media', 'id'),
-                
+                            ->relationship('media', 'id')
+                            ->orderColumn('order') // Optional: Rename the order column if needed
+                            ->typeColumn('type') // Optional: Rename the type column if needed
+                            ->typeValue('author'),
+
                         Forms\Components\Textarea::make('description')
                             ->maxLength(65535)
                             ->columnSpanFull(),
@@ -52,20 +56,20 @@ class AuthorResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('stage_name')
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('comics_count')
                     ->counts('comics')
                     ->label('Comics')
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -73,7 +77,7 @@ class AuthorResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('has_comics')
-                    ->query(fn (Builder $query): Builder => $query->has('comics'))
+                    ->query(fn(Builder $query): Builder => $query->has('comics'))
                     ->label('Has Comics'),
             ])
             ->actions([

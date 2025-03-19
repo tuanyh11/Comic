@@ -27,6 +27,6 @@ class Author extends Model
 
      public function media()
     {
-        return $this->morphOne(Media::class, 'mediable');
+        return $this->morphMany(MediaItem::class, 'mediable')->orderBy('order');
     }
 }
