@@ -1,828 +1,625 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kamen Rider Decade 3D Game</title>
+    <title>Thiết kế cơ sở dữ liệu</title>
     <style>
         body {
+            font-family: 'Calibri', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
             margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
+            padding: 20px;
+            color: #000000;
         }
 
-        #info {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 100;
-            display: block;
+        h1 {
+            font-size: 16pt;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 12pt;
+            color: #000000;
         }
 
-        #score {
-            position: absolute;
-            top: 40px;
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 12pt;
+            margin-bottom: 6pt;
+            color: #000000;
+        }
+
+        p {
+            margin-bottom: 6pt;
+        }
+
+        table {
+            border-collapse: collapse;
             width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 12pt;
         }
 
-        #health {
-            position: absolute;
-            top: 70px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        th,
+        td {
+            border: 1pt solid #000000;
+            padding: 5pt;
+            text-align: left;
+            vertical-align: top;
         }
 
-        #form {
-            position: absolute;
-            top: 100px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        #transformInfo {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 100;
-            font-size: 14px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        #gameOver {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: red;
-            font-size: 50px;
-            text-align: center;
-            display: none;
-            z-index: 200;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        #restart {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 50px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 100;
-            font-size: 14px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        th {
+            font-weight: bold;
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 
 <body>
-    <div id="info">KAMEN RIDER DECADE 3D GAME</div>
-    <div id="score">Score: 0</div>
-    <div id="health">Health: 100</div>
-    <div id="form">Form: Decade Base Form</div>
-    <div id="transformInfo">Press 1-5 to transform into different Rider forms!</div>
-    <div class="controls">
-        Controls: ←↑→↓ to move | SPACE to jump | SHIFT to dash | 1-5 to transform | Z to attack
-    </div>
-    <div id="gameOver">
-        GAME OVER
-        <button id="restart">Restart Game</button>
-    </div>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.module.js"
-            }
-        }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-
-        // Game variables
-        let scene, camera, renderer, rider, riderParts = {}, enemies = [], obstacles = [], effects = [];
-        let clock = new THREE.Clock();
-        let score = 0;
-        let health = 100;
-        let isGameOver = false;
-        let moveSpeed = 0.15;
-        let enemySpeed = 0.1;
-        let roadLength = 1000;
-        let laneWidth = 4;
-        let lanes = [-laneWidth, 0, laneWidth];
-        let currentLane = 1; // Middle lane
-        let jumping = false;
-        let jumpHeight = 3;
-        let jumpSpeed = 0.15;
-        let jumpPosition = 0;
-        let spawnInterval;
-        let isDashing = false;
-        let dashSpeed = 0.4;
-        let normalSpeed = 0.15;
-        let currentForm = 'decade'; // Default form
-        let isAttacking = false;
-        let attackCooldown = 0;
-        let moveDirection = { forward: false, backward: false, left: false, right: false };
-        let riderZ = 0;
-
-        // Rider forms with different properties and colors
-        const riderForms = {
-            decade: {
-                name: 'Decade Base Form',
-                colors: {
-                    main: 0xFF00FF, // Magenta
-                    secondary: 0x222222,
-                    visor: 0x00FF00
-                },
-                attackPower: 1,
-                speed: 1,
-                dashMultiplier: 1
-            },
-            kuuga: {
-                name: 'Kamen Rider Kuuga',
-                colors: {
-                    main: 0xDD0000, // Red
-                    secondary: 0x111111,
-                    visor: 0xFFFF00
-                },
-                attackPower: 1.5,
-                speed: 1.2,
-                dashMultiplier: 1.1
-            },
-            agito: {
-                name: 'Kamen Rider Agito',
-                colors: {
-                    main: 0xFFD700, // Gold
-                    secondary: 0x333333,
-                    visor: 0xDD0000
-                },
-                attackPower: 1.3,
-                speed: 1.3,
-                dashMultiplier: 1.2
-            },
-            ryuki: {
-                name: 'Kamen Rider Ryuki',
-                colors: {
-                    main: 0xFF0000, // Red
-                    secondary: 0x444444,
-                    visor: 0x111111
-                },
-                attackPower: 1.4,
-                speed: 1.1,
-                dashMultiplier: 1.3
-            },
-            faiz: {
-                name: 'Kamen Rider Faiz',
-                colors: {
-                    main: 0x222222, // Black
-                    secondary: 0xEEEEEE,
-                    visor: 0xFF0000
-                },
-                attackPower: 1.6,
-                speed: 1.4,
-                dashMultiplier: 1.4
-            }
-        };
-
-        // Initialize the game
-        function init() {
-            // Reset game state if restarting
-            isGameOver = false;
-            score = 0;
-            health = 100;
-            enemies = [];
-            obstacles = [];
-            effects = [];
-            currentForm = 'decade';
-            riderZ = 0;
-            moveDirection = { forward: false, backward: false, left: false, right: false };
-
-            // Create scene
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // Sky blue background
-
-            // Create camera
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 5, 10);
-            camera.lookAt(0, 0, 0);
-
-            // Create renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            document.body.appendChild(renderer.domElement);
-
-            // Add lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(5, 10, 7.5);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.camera.top = 50;
-            directionalLight.shadow.camera.bottom = -50;
-            directionalLight.shadow.camera.left = -50;
-            directionalLight.shadow.camera.right = 50;
-            scene.add(directionalLight);
-
-            // Create road
-            createRoad();
-
-            // Create Kamen Rider character
-            createRider();
-
-            // Add event listeners
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('keydown', onKeyDown);
-            document.addEventListener('keyup', onKeyUp);
-
-            // Update display
-            updateScoreDisplay();
-            updateHealthDisplay();
-            updateFormDisplay();
-
-            // Start spawning enemies and obstacles
-            spawnInterval = setInterval(spawnEnemies, 2000);
-
-            // Start animation loop
-            animate();
-        }
-
-        function createRoad() {
-            const roadGeometry = new THREE.PlaneGeometry(laneWidth * 5, roadLength);
-            const roadMaterial = new THREE.MeshStandardMaterial({
-                color: 0x333333,
-                roughness: 0.8
-            });
-            const road = new THREE.Mesh(roadGeometry, roadMaterial);
-            road.rotation.x = -Math.PI / 2;
-            road.position.z = -roadLength / 2;
-            road.receiveShadow = true;
-            scene.add(road);
-
-            // Add road markings
-            const lineGeometry = new THREE.PlaneGeometry(0.2, roadLength);
-            const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-
-            for (let x = -laneWidth; x <= laneWidth; x += laneWidth) {
-                if (x !== -laneWidth && x !== laneWidth) {
-                    const line = new THREE.Mesh(lineGeometry, lineMaterial);
-                    line.rotation.x = -Math.PI / 2;
-                    line.position.set(x, 0.01, -roadLength / 2);
-                    scene.add(line);
-                }
-            }
-
-            // Add environment (simple grass fields)
-            const grassGeometry = new THREE.PlaneGeometry(50, roadLength);
-            const grassMaterial = new THREE.MeshStandardMaterial({ color: 0x7CFC00 });
-
-            const leftGrass = new THREE.Mesh(grassGeometry, grassMaterial);
-            leftGrass.rotation.x = -Math.PI / 2;
-            leftGrass.position.set(-25, -0.01, -roadLength / 2);
-            scene.add(leftGrass);
-
-            const rightGrass = new THREE.Mesh(grassGeometry, grassMaterial);
-            rightGrass.rotation.x = -Math.PI / 2;
-            rightGrass.position.set(25, -0.01, -roadLength / 2);
-            scene.add(rightGrass);
-
-            // Add some decorative elements
-            addEnvironmentObjects();
-        }
-
-        function addEnvironmentObjects() {
-            // Add some trees
-            for (let i = 0; i < 30; i++) {
-                createTree(-20 - Math.random() * 15, -100 - i * 30);
-                createTree(20 + Math.random() * 15, -100 - i * 30);
-            }
-
-            // Add some buildings in the background
-            for (let i = 0; i < 10; i++) {
-                createBuilding(-35 - Math.random() * 15, -100 - i * 80);
-                createBuilding(35 + Math.random() * 15, -100 - i * 80);
-            }
-        }
-
-        function createTree(x, z) {
-            const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.7, 4, 8);
-            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-            trunk.position.set(x, 2, z);
-            trunk.castShadow = true;
-            scene.add(trunk);
-
-            const foliageGeometry = new THREE.ConeGeometry(3, 6, 8);
-            const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
-            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
-            foliage.position.set(x, 7, z);
-            foliage.castShadow = true;
-            scene.add(foliage);
-        }
-
-        function createBuilding(x, z) {
-            const height = 10 + Math.random() * 20;
-            const width = 5 + Math.random() * 10;
-            const depth = 5 + Math.random() * 10;
-
-            const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
-            const buildingMaterial = new THREE.MeshStandardMaterial({
-                color: 0x808080,
-                roughness: 0.7
-            });
-            const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
-            building.position.set(x, height / 2, z);
-            building.castShadow = true;
-            scene.add(building);
-
-            // Add windows
-            const windowSize = 1;
-            const windowGeometry = new THREE.PlaneGeometry(windowSize, windowSize);
-            const windowMaterial = new THREE.MeshStandardMaterial({
-                color: 0xFFFF99,
-                emissive: 0xFFFF99,
-                emissiveIntensity: 0.5
-            });
-
-            for (let i = 0; i < Math.floor(height / 3); i++) {
-                for (let j = 0; j < Math.floor(width / 2); j++) {
-                    const windowPane = new THREE.Mesh(windowGeometry, windowMaterial);
-                    windowPane.position.set(
-                        x - width / 2 + 1 + j * 2,
-                        2 + i * 3,
-                        z - depth / 2 - 0.1
-                    );
-                    scene.add(windowPane);
-                }
-            }
-        }
-
-        function createRider() {
-            // Create a group for the rider
-            rider = new THREE.Group();
-
-            // Body
-            const bodyGeometry = new THREE.BoxGeometry(1, 1.5, 0.5);
-            const bodyMaterial = new THREE.MeshStandardMaterial({ color: riderForms[currentForm].colors.main });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            body.position.y = 1.25;
-            body.castShadow = true;
-            rider.add(body);
-            riderParts.body = body;
-
-            // Head
-            const headGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-            const headMaterial = new THREE.MeshStandardMaterial({ color: riderForms[currentForm].colors.main });
-            const head = new THREE.Mesh(headGeometry, headMaterial);
-            head.position.y = 2.5;
-            head.castShadow = true;
-            rider.add(head);
-            riderParts.head = head;
-
-            // Eye visor
-            const visorGeometry = new THREE.BoxGeometry(0.8, 0.2, 0.6);
-            const visorMaterial = new THREE.MeshStandardMaterial({
-                color: riderForms[currentForm].colors.visor,
-                emissive: riderForms[currentForm].colors.visor,
-                emissiveIntensity: 0.5
-            });
-            const visor = new THREE.Mesh(visorGeometry, visorMaterial);
-            visor.position.set(0, 2.5, 0.3);
-            rider.add(visor);
-            riderParts.visor = visor;
-
-            // Legs
-            const legGeometry = new THREE.BoxGeometry(0.4, 1, 0.4);
-            const legMaterial = new THREE.MeshStandardMaterial({ color: riderForms[currentForm].colors.secondary });
-
-            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-            leftLeg.position.set(-0.3, 0.5, 0);
-            leftLeg.castShadow = true;
-            rider.add(leftLeg);
-            riderParts.leftLeg = leftLeg;
-
-            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-            rightLeg.position.set(0.3, 0.5, 0);
-            rightLeg.castShadow = true;
-            rider.add(rightLeg);
-            riderParts.rightLeg = rightLeg;
-
-            // Arms
-            const armGeometry = new THREE.BoxGeometry(0.3, 1, 0.3);
-            const armMaterial = new THREE.MeshStandardMaterial({ color: riderForms[currentForm].colors.main });
-
-            const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-            leftArm.position.set(-0.65, 1.25, 0);
-            leftArm.castShadow = true;
-            rider.add(leftArm);
-            riderParts.leftArm = leftArm;
-
-            const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-            rightArm.position.set(0.65, 1.25, 0);
-            rightArm.castShadow = true;
-            rider.add(rightArm);
-            riderParts.rightArm = rightArm;
-
-            // Add belt
-            const beltGeometry = new THREE.BoxGeometry(1.1, 0.2, 0.6);
-            const beltMaterial = new THREE.MeshStandardMaterial({
-                color: 0xFFFFFF,
-                metalness: 0.8,
-                roughness: 0.2
-            });
-            const belt = new THREE.Mesh(beltGeometry, beltMaterial);
-            belt.position.set(0, 0.7, 0);
-            rider.add(belt);
-            riderParts.belt = belt;
-
-            // Add DecaDriver (Decade's belt buckle)
-            const decaDriverGeometry = new THREE.BoxGeometry(0.6, 0.3, 0.3);
-            const decaDriverMaterial = new THREE.MeshStandardMaterial({
-                color: 0x444444,
-                metalness: 0.9,
-                roughness: 0.1
-            });
-            const decaDriver = new THREE.Mesh(decaDriverGeometry, decaDriverMaterial);
-            decaDriver.position.set(0, 0.7, 0.4);
-            rider.add(decaDriver);
-            riderParts.decaDriver = decaDriver;
-
-            // Card slot in the DecaDriver
-            const cardSlotGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.1);
-            const cardSlotMaterial = new THREE.MeshStandardMaterial({
-                color: riderForms[currentForm].colors.main,
-                emissive: riderForms[currentForm].colors.main,
-                emissiveIntensity: 0.3
-            });
-            const cardSlot = new THREE.Mesh(cardSlotGeometry, cardSlotMaterial);
-            cardSlot.position.set(0, 0.7, 0.6);
-            rider.add(cardSlot);
-            riderParts.cardSlot = cardSlot;
-
-            // Position the rider
-            rider.position.set(lanes[currentLane], 0, riderZ);
-            scene.add(rider);
-        }
-
-        function transformRider(formName) {
-            if (!riderForms[formName]) return;
-
-            // Create transformation effect
-            createTransformEffect();
-
-            // Change current form
-            currentForm = formName;
-
-            // Update display
-            updateFormDisplay();
-
-            // Update rider colors based on the new form
-            riderParts.body.material.color.setHex(riderForms[currentForm].colors.main);
-            riderParts.head.material.color.setHex(riderForms[currentForm].colors.main);
-            riderParts.visor.material.color.setHex(riderForms[currentForm].colors.visor);
-            riderParts.visor.material.emissive.setHex(riderForms[currentForm].colors.visor);
-            riderParts.leftLeg.material.color.setHex(riderForms[currentForm].colors.secondary);
-            riderParts.rightLeg.material.color.setHex(riderForms[currentForm].colors.secondary);
-            riderParts.leftArm.material.color.setHex(riderForms[currentForm].colors.main);
-            riderParts.rightArm.material.color.setHex(riderForms[currentForm].colors.main);
-            riderParts.cardSlot.material.color.setHex(riderForms[currentForm].colors.main);
-            riderParts.cardSlot.material.emissive.setHex(riderForms[currentForm].colors.main);
-
-            // Update movement speed based on the form
-            normalSpeed = 0.15 * riderForms[currentForm].speed;
-            dashSpeed = normalSpeed * riderForms[currentForm].dashMultiplier;
-        }
-
-        function createTransformEffect() {
-            // Create a sphere that expands from the rider
-            const effectGeometry = new THREE.SphereGeometry(0.1, 32, 32);
-            const effectMaterial = new THREE.MeshBasicMaterial({
-                color: riderForms[currentForm].colors.main,
-                transparent: true,
-                opacity: 0.7
-            });
-            const effect = new THREE.Mesh(effectGeometry, effectMaterial);
-            effect.position.copy(rider.position);
-            effect.scale.set(1, 1, 1);
-            effect.userData.type = "effect";
-            effect.userData.lifespan = 30; // frames
-            scene.add(effect);
-            effects.push(effect);
-
-            // Add some particles
-            for (let i = 0; i < 20; i++) {
-                const particleGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-                const particleMaterial = new THREE.MeshBasicMaterial({
-                    color: riderForms[currentForm].colors.visor,
-                    transparent: true,
-                    opacity: 0.9
-                });
-                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-
-                // Random position around the rider
-                particle.position.set(
-                    rider.position.x + (Math.random() - 0.5) * 3,
-                    rider.position.y + Math.random() * 4,
-                    rider.position.z + (Math.random() - 0.5) * 3
-                );
-
-                // Random velocity
-                particle.userData.velocity = new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.2,
-                    Math.random() * 0.2,
-                    (Math.random() - 0.5) * 0.2
-                );
-
-                particle.userData.type = "particle";
-                particle.userData.lifespan = 30 + Math.random() * 30; // frames
-                scene.add(particle);
-                effects.push(particle);
-            }
-        }
-
-        function createAttackEffect() {
-            // Create a slash effect
-            const slashGeometry = new THREE.PlaneGeometry(4, 1);
-            const slashMaterial = new THREE.MeshBasicMaterial({
-                color: riderForms[currentForm].colors.visor,
-                transparent: true,
-                opacity: 0.7,
-                side: THREE.DoubleSide
-            });
-            const slash = new THREE.Mesh(slashGeometry, slashMaterial);
-
-            // Position the slash in front of the rider
-            slash.position.set(
-                rider.position.x,
-                rider.position.y + 1,
-                rider.position.z - 2
-            );
-
-            slash.rotation.y = Math.PI / 2;
-            slash.userData.type = "slash";
-            slash.userData.lifespan = 10; // frames
-            slash.userData.damage = 30 * riderForms[currentForm].attackPower;
-            scene.add(slash);
-            effects.push(slash);
-        }
-
-        function createEnemy() {
-            const rnd = Math.random();
-            const laneIndex = Math.floor(Math.random() * lanes.length);
-            const lane = lanes[laneIndex];
-            const zPosition = -100 - Math.random() * 50; // Randomize starting distance
-
-            let enemy;
-
-            if (rnd < 0.7) { // 70% chance for normal enemy
-                // Create enemy monster
-                const group = new THREE.Group();
-
-                const bodyGeometry = new THREE.BoxGeometry(1.2, 1.8, 0.6);
-                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                body.position.y = 1.4;
-                body.castShadow = true;
-                group.add(body);
-
-                const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-                const headMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-                const head = new THREE.Mesh(headGeometry, headMaterial);
-                head.position.y = 2.7;
-                head.castShadow = true;
-                group.add(head);
-
-                // Eyes
-                const eyeGeometry = new THREE.SphereGeometry(0.15, 16, 16);
-                const eyeMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xFF0000,
-                    emissive: 0xFF0000,
-                    emissiveIntensity: 0.5
-                });
-
-                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-                leftEye.position.set(-0.2, 2.7, 0.4);
-                group.add(leftEye);
-
-                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-                rightEye.position.set(0.2, 2.7, 0.4);
-                group.add(rightEye);
-
-                enemy = group;
-                enemy.userData.type = "enemy";
-                enemy.userData.value = 100;
-                enemy.userData.health = 100;
-            } else { // 30% chance for obstacle
-                const obstacleGeometry = new THREE.BoxGeometry(1.5, 1, 1.5);
-                const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                enemy = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-                enemy.position.y = 0.5;
-                enemy.castShadow = true;
-                enemy.userData.type = "obstacle";
-                enemy.userData.value = 0;
-                enemy.userData.health = 50;
-            }
-
-            enemy.position.set(lane, 0, zPosition);
-            scene.add(enemy);
-            enemies.push(enemy);
-        }
-
-        function spawnEnemies() {
-            if (!isGameOver) {
-                createEnemy();
-            }
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function onKeyDown(event) {
-            if (isGameOver) return;
-
-            switch (event.code) {
-                case 'ArrowLeft':
-                    moveDirection.left = true;
-                    break;
-                case 'ArrowRight':
-                    moveDirection.right = true;
-                    break;
-                case 'ArrowUp':
-                    moveDirection.forward = true;
-                    break;
-                case 'ArrowDown':
-                    moveDirection.backward = true;
-                    break;
-                case 'Space':
-                    if (!jumping) {
-                        jumping = true;
-                        jumpPosition = 0;
-                    }
-                    break;
-                case 'ShiftLeft':
-                case 'ShiftRight':
-                    isDashing = true;
-                    break;
-                case 'KeyZ':
-                    if (attackCooldown <= 0) {
-                        isAttacking = true;
-                        createAttackEffect();
-                        attackCooldown = 30; // 30 frames cooldown
-                    }
-                    break;
-                case 'Digit1':
-                    transformRider('decade');
-                    break;
-                case 'Digit2':
-                    transformRider('kuuga');
-                    break;
-                case 'Digit3':
-                    transformRider('agito');
-                    break;
-                case 'Digit4':
-                    transformRider('ryuki');
-                    break;
-                case 'Digit5':
-                    transformRider('faiz');
-                    break;
-            }
-        }
-
-        function onKeyUp(event) {
-            switch (event.code) {
-                case 'ArrowLeft':
-                    moveDirection.left = false;
-                    break;
-                case 'ArrowRight':
-                    moveDirection.right = false;
-                    break;
-                case 'ArrowUp':
-                    moveDirection.forward = false;
-                    break;
-                case 'ArrowDown':
-                    moveDirection.backward = false;
-                    break;
-                case 'ShiftLeft':
-                case 'ShiftRight':
-                    isDashing = false;
-                    break;
-                case 'KeyZ':
-                    isAttacking = false;
-                    break;
-            }
-        }
-
-        function handleMovement(delta) {
-            // Set the current speed based on whether dashing is active
-            const currentSpeed = isDashing ? dashSpeed : normalSpeed;
-
-            // Handle lane changes (left/right)
-            if (moveDirection.left && !jumping) {
-                if (currentLane > 0) {
-                    currentLane--;
-                    const targetX = lanes[currentLane];
-                    rider.position.x = targetX;
-                }
-                moveDirection.left = false; // Reset to prevent continuous movement
-            }
-
-            if (moveDirection.right && !jumping) {
-                if (currentLane < lanes.length - 1) {
-                    currentLane++;
-                    const targetX = lanes[currentLane];
-                    rider.position.x = targetX;
-                }
-                moveDirection.right = false; // Reset to prevent continuous movement
-            }
-
-            // Handle forward/backward movement
-            if (moveDirection.forward) {
-                riderZ -= currentSpeed;
-                rider.position.z = riderZ;
-            }
-
-            if (moveDirection.backward) {
-                riderZ += currentSpeed * 0.5; // Slower backward movement
-                rider.position.z = riderZ;
-            }
-
-            // Handle jumping
-            if (jumping) {
-                // Simple parabolic jump
-                jumpPosition += jumpSpeed;
-
-                if (jumpPosition <= Math.PI) {
-                    rider.position.y = Math.sin(jumpPosition) * jumpHeight;
-                } else {
-                    rider.position.y = 0;
-                    jumping = false;
-                    jumpPosition = 0;
-                }
-            }
-
-            // Update camera to follow the rider
-            camera.position.z = rider.position.z + 10;
-            camera.lookAt(rider.position.x, rider.position.y + 1, rider.position.z - 5);
-
-            // Animate the rider during movement
-            animateRider(delta);
-        }
-
-        function animateRider(delta) {
-            // Simple animation for the rider during movement or attacks
-            if (moveDirection.forward || moveDirection.backward || isDashing) {
-                // Swing legs while moving
-                riderParts.leftLeg.rotation.x = Math.sin(Date.now() * 0.01) * 0.5;
-                riderParts.rightLeg.rotation.x = Math.sin(Date.now() * 0.01 + Math.PI) * 0.5;
-
-                // Swing arms while moving
-                riderParts.leftArm.rotation.x = Math.sin(Date.now() * 0.01 + Math.PI) * 0.3;
-                riderParts.rightArm.rotation.x = Math.sin(Date.now() * 0.01) * 0.3;
-            } else {
-                // Reset animations when not moving
-                riderParts.leftLeg.rotation.x = 0;
-                riderParts.rightLeg.rotation.x = 0;
-                riderParts.leftArm.rotation.x = 0;
-                riderParts.rightArm.rotation.x = 0;
-            }
-
-            // Animation for attacking
-            if (isAttacking) {
-                riderParts.rightArm.rotation.x = -Math.PI / 2; // Extend arm forward
-            }
-
-            // If transforming or special effects, could add more animations here
-        }
+    <h1>Thiết kế cơ sở dữ liệu</h1>
+    <p>Dựa trên biểu đồ lớp được cung cấp, dưới đây là thiết kế cơ sở dữ liệu chi tiết:</p>
+
+    <h2>Bảng Genres (Thể loại)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int(10)</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của thể loại</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>name</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Tên thể loại</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>slug</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Định danh URL thân thiện</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Tags (Thẻ)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int(10)</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của thẻ</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>name</td>
+                <td>varchar(100)</td>
+                <td>Not null</td>
+                <td>Tên thẻ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Authors (Tác giả)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int(10)</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của tác giả</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>name</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Tên tác giả</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>state_name</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Tên hiển thị/bút danh</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>biography</td>
+                <td>varchar(2000)</td>
+                <td>Null</td>
+                <td>Tiểu sử tác giả</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Comics (Truyện)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int(10)</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của truyện</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>title</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Tiêu đề truyện</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>author_id</td>
+                <td>int(10)</td>
+                <td>Khóa ngoại</td>
+                <td>Liên kết đến tác giả chính</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>slug</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Định danh URL thân thiện</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>status</td>
+                <td>varchar(50)</td>
+                <td>Not null</td>
+                <td>Trạng thái xuất bản (đang cập nhật, hoàn thành...)</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>image_id</td>
+                <td>int(10)</td>
+                <td>Khóa ngoại</td>
+                <td>Liên kết đến ảnh bìa</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>description</td>
+                <td>varchar(2000)</td>
+                <td>Null</td>
+                <td>Mô tả tóm tắt nội dung</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>user_id</td>
+                <td>int(10)</td>
+                <td>Khóa ngoại</td>
+                <td>Người đăng truyện</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Chapters (Chương)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int(10)</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của chương</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>title</td>
+                <td>varchar(255)</td>
+                <td>Not null</td>
+                <td>Tiêu đề chương</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>order</td>
+                <td>int(10)</td>
+                <td>Not null</td>
+                <td>Thứ tự chương trong truyện</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>description</td>
+                <td>varchar(1000)</td>
+                <td>Null</td>
+                <td>Mô tả ngắn về chương</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>vote_count</td>
+                <td>int(10)</td>
+                <td>Default 0</td>
+                <td>Số lượt bình chọn</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>read_count</td>
+                <td>int(10)</td>
+                <td>Default 0</td>
+                <td>Số lượt đọc</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>content</td>
+                <td>text</td>
+                <td>Not null</td>
+                <td>Nội dung chương</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>pricing</td>
+                <td>float(10,2)</td>
+                <td>Default 0</td>
+                <td>Giá mở khóa chương (nếu là chương trả phí)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Comments (Bình luận)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của bình luận</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>content</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Nội dung bình luận</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>user_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Người bình luận</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>comic_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Truyện được bình luận</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>deep</td>
+                <td>int</td>
+                <td>Default 0</td>
+                <td>Độ sâu phân cấp của bình luận (hỗ trợ trả lời)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Media (Phương tiện)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của phương tiện</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>name</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Tên tập tin</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>size</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Kích thước tập tin</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>alt</td>
+                <td>varchar</td>
+                <td>Null</td>
+                <td>Mô tả thay thế</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>type</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Loại phương tiện (hình ảnh, âm thanh...)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Users (Người dùng)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của người dùng</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>name</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Tên hiển thị</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>email</td>
+                <td>varchar</td>
+                <td>Not null, Unique</td>
+                <td>Địa chỉ email</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>avatar</td>
+                <td>varchar</td>
+                <td>Null</td>
+                <td>Đường dẫn ảnh đại diện</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>password</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Mật khẩu đã mã hóa</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Wallets (Ví)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của ví</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>user_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Chủ sở hữu ví</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>currency</td>
+                <td>float</td>
+                <td>Default 0</td>
+                <td>Số dư hiện tại</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Payment (Thanh toán)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>id</td>
+                <td>int</td>
+                <td>Khóa chính</td>
+                <td>Định danh duy nhất của giao dịch</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>user_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Người thực hiện giao dịch</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>chapter_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Chương được mua (nếu có)</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>status</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Trạng thái giao dịch</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>amount</td>
+                <td>float</td>
+                <td>Not null</td>
+                <td>Số tiền giao dịch</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>currency</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Đơn vị tiền tệ</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>method</td>
+                <td>varchar</td>
+                <td>Not null</td>
+                <td>Phương thức thanh toán</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Comic_Genre (Liên kết truyện-thể loại)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>comic_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Liên kết đến truyện</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>genre_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Liên kết đến thể loại</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Bảng Comic_Tag (Liên kết truyện-thẻ)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên trường</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Ràng buộc</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>comic_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Liên kết đến truyện</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>tag_id</td>
+                <td>int</td>
+                <td>Khóa ngoại</td>
+                <td>Liên kết đến thẻ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Mỗi bảng được thiết kế với các phương thức chức năng tương ứng như Thêm(), Sửa(), Xóa() và Tìm kiếm() như thể
+        hiện trong biểu đồ lớp. Các mối quan hệ giữa các bảng được thiết lập thông qua các khóa ngoại, đảm bảo tính toàn
+        vẹn dữ liệu và hiệu quả trong việc truy vấn.</p>
+</body>
+
+</html>
