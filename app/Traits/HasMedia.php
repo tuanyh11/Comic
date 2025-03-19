@@ -15,12 +15,14 @@ trait HasMedia
 
     public function getThumbnailUrlAttribute()
     {
-        $mediaItem = $this->media()->first();
-        if ($mediaItem && $mediaItem->media) {
-            return $mediaItem->media->url;
-        }
-        return null;
+         $mediaItem = $this->media()->orderBy('order')->first();
+    if ($mediaItem && $mediaItem->media) {
+        return $mediaItem->media;
     }
+    return null;
+    }
+
+   
 }
 
 

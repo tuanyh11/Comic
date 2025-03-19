@@ -26,7 +26,12 @@ class AuthorResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Author Information')
+                self::formSchema()
+            ]);
+    }
+
+    public static function formSchema() {
+        return Forms\Components\Section::make('Author Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -46,8 +51,7 @@ class AuthorResource extends Resource
                         Forms\Components\Textarea::make('description')
                             ->maxLength(65535)
                             ->columnSpanFull(),
-                    ])->columns(2),
-            ]);
+                    ])->columns(2);
     }
 
     public static function table(Table $table): Table

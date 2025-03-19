@@ -49,7 +49,9 @@ export type Comic = {
     slug: string;
     status: 'completed' | 'ongoing' | 'cancelled';
     author: User;
-    thumbnail: Media;
+    media: {
+        media: Media;
+    }[];
     created_at: string;
     updated_at: string;
     tags: Tag[];
@@ -89,6 +91,8 @@ export type Tag = {
 
 interface Media {
     url: string;
+    large_url: string;
+    medium_ur: string;
     alt?: string;
 }
 

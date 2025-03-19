@@ -20,7 +20,7 @@ use TomatoPHP\FilamentMediaManager\Traits\InteractsWithMediaFolders;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasMedia, HasRoles;
+    use HasFactory, Notifiable, HasMedia, HasRoles, HasPanelShield;
 
     /**
      * The attributes that are mass assignable.

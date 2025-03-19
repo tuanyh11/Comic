@@ -1,3 +1,4 @@
+import { Comic } from '@/types/custom';
 import { Head, Link } from '@inertiajs/react';
 import { BookOpen, Eye, Heart, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -9,36 +10,6 @@ import 'swiper/css/pagination';
 import { Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-interface Comic {
-    id: number;
-    title: string;
-    description: string;
-    rating: string;
-    votes: string;
-    year: string;
-    genre: string;
-    read_count: number;
-    vote_count?: number;
-    image?: string;
-    thumbnail?: {
-        url: string;
-        alt: string;
-    };
-    genres?: Array<{
-        id: number;
-        name: string;
-    }>;
-    tags?: Array<{
-        id: number;
-        name: string;
-    }>;
-    author?: {
-        id: number;
-        name: string;
-        avatar?: string;
-    };
-    chapters?: number;
-}
 
 interface Props {
     canLogin: boolean;
@@ -59,6 +30,11 @@ export default function Welcome({ featuredComic, comicList }: Props) {
         null,
     );
 
+    console.log('====================================');
+    console.log(comicList
+
+    );
+    console.log('====================================');
     // Set initial active slide index
     const initialSlideIndex = comicList.findIndex(
         (comic) => comic.id === featuredComic.id,
@@ -131,11 +107,11 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                 <div className="relative h-full">
                     {/* Background Image with fade transition */}
                     <div className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-700">
-                        {currentComic.thumbnail ? (
+                        {currentComic.media.length > 0 ? (
                             <div className="relative h-full w-full">
                                 <img
-                                    src={currentComic.thumbnail.url}
-                                    alt={currentComic.thumbnail.alt}
+                                    src={currentComic.media[0].media.url}
+                                    alt={currentComic.media[0].media.alt}
                                     className="h-full w-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 to-pink-900/40 mix-blend-multiply"></div>
@@ -356,7 +332,7 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                                         <div className="relative h-60 bg-gradient-to-br from-blue-900 to-pink-900 shadow-lg">
                                             {comic.thumbnail ? (
                                                 <img
-                                                    src={comic.thumbnail.url}
+                                                    src={comic..url}
                                                     alt={
                                                         comic.thumbnail.alt ||
                                                         comic.title

@@ -10,8 +10,6 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('js/dflip/css/dflip.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('js/dflip/css/themify-icons.min.css') }}">
 
     <!-- Scripts -->
     @routes
@@ -29,7 +27,5 @@
    
     @inertia
 </body>
-<script defer src="{{ asset('js/dflip/js/libs/jquery.min.js') }}"></script>
-<script defer src="{{ asset('js/dflip/js/dflip.min.js') }}"></script>
 
 </html>

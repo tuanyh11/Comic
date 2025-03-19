@@ -9,7 +9,7 @@ interface AvatarProps {
 
 const Avatar: FC<AvatarProps> = ({ user, size }) => {
     const sizeClasses = size === 'md' ? 'h-8 w-8' : 'h-6 w-6';
-    if (user.avatar) {
+    if (user?.avatar) {
         return (
             <div
                 className={`${sizeClasses} flex-shrink-0 overflow-hidden rounded-full`}

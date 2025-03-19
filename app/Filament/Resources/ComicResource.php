@@ -68,11 +68,7 @@ class ComicResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->createOptionForm([
-                                        Forms\Components\TextInput::make('name')
-                                            ->required()
-                                            ->maxLength(255),
-                                        Forms\Components\TextInput::make('stage_name')
-                                            ->maxLength(255),
+                                       AuthorResource::formSchema()
                                     ])
                                     ->required(),
 
