@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ComicResource\Pages;
 
 use App\Filament\Resources\ComicResource;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

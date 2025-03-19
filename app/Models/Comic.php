@@ -51,4 +51,8 @@ class Comic extends Model
         return $query->withSum('chapters', 'read_count')
             ->withSum('chapters', 'vote_count');
     }
+
+
+
+ protected $with = ['media.media'];
 }

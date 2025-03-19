@@ -9,4 +9,8 @@ enum CURRENCY: string
     {
         return $this->value;
     }
+
+    static public function getAll() {
+        return array_column(self::cases(), 'value');
+    }
 };

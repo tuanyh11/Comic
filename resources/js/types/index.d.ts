@@ -1,11 +1,5 @@
 import { Config } from 'ziggy-js';
-
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-    email_verified_at?: string;
-}
+import { User } from './custom';
 
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
@@ -14,4 +8,9 @@ export type PageProps<
         user: User;
     };
     ziggy: Config & { location: string };
+    wallet: {
+        balance: string;
+
+        currency: string;
+    };
 };

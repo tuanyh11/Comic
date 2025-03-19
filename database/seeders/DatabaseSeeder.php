@@ -19,5 +19,9 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'admin@admin.com',
         ]);
+
+         $user = User::first();
+
+        $user->assignRole('super_admin');
     }
 }

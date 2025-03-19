@@ -12,6 +12,15 @@ trait HasMedia
     {
           return $this->morphMany(MediaItem::class, 'mediable')->orderBy('order');
     }
+
+    public function getThumbnailUrlAttribute()
+    {
+        $mediaItem = $this->media()->first();
+        if ($mediaItem && $mediaItem->media) {
+            return $mediaItem->media->url;
+        }
+        return null;
+    }
 }
 
 

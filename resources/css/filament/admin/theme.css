@@ -1,7 +1,7 @@
-@import '../../../../vendor/filament/filament/resources/css/base.css';
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
 @import '../../../../vendor/awcodes/filament-curator/resources/css/plugin.css';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-@tailwind variants;
+@import url('https://cdnjs.cloudflare.com/ajax/libs/cropper/4.1.0/cropper.min.css" integrity="sha512-vmXqikRa5kmI3gOQygzml5nV+5NGxG8rt8KWHKj8JYYK12JUl2L8RBfWinFGTzvpwwsIRcINy9mhLyodnmzjig==');
+
+
 @config 'tailwind.config.js';
+

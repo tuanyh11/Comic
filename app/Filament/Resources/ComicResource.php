@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ComicResource\Pages;
 use App\Models\Comic;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,12 +16,14 @@ use Illuminate\Support\Str;
 
 class ComicResource extends Resource
 {
+    // use HasPageShield;
+
     protected static ?string $model = Comic::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
-    
+
     protected static ?string $navigationGroup = 'Content Management';
-    
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -35,22 +38,22 @@ class ComicResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn (Forms\Get $get, Forms\Set $set, ?string $state) => 
-                                        $set('slug', Str::slug($state))),
-                
+                                    ->afterStateUpdated(fn(Forms\Get $get, Forms\Set $set, ?string $state) =>
+                                    $set('slug', Str::slug($state))),
+
                                 Forms\Components\TextInput::make('slug')
                                     ->required()
                                     ->maxLength(255)
                                     ->unique(Comic::class, 'slug', ignoreRecord: true),
-                
-                                 CuratorPicker::make('document_ids')
-                            ->multiple()
-                            ->label('Thumbnail Image')
-                            ->relationship('media', 'id')
-                            ->orderColumn('order') // Optional: Rename the order column if needed
-                            ->typeColumn('type') // Optional: Rename the type column if needed
-                            ->typeValue(Comic::class),
-                
+
+                                CuratorPicker::make('document_ids')
+                                    ->multiple()
+                                    ->label('Thumbnail Image')
+                                    ->relationship('media', 'id')
+                                    ->orderColumn('order') // Optional: Rename the order column if needed
+                                    ->typeColumn('type') // Optional: Rename the type column if needed
+                                    ->typeValue(Comic::class),
+
                                 Forms\Components\Select::make('status')
                                     ->options([
                                         'ongoing' => 'Ongoing',
@@ -59,7 +62,7 @@ class ComicResource extends Resource
                                         'cancelled' => 'Cancelled',
                                     ])
                                     ->required(),
-                
+
                                 Forms\Components\Select::make('author_id')
                                     ->relationship('author', 'name')
                                     ->searchable()
@@ -72,7 +75,7 @@ class ComicResource extends Resource
                                             ->maxLength(255),
                                     ])
                                     ->required(),
-                
+
                                 Forms\Components\Textarea::make('description')
                                     ->maxLength(65535)
                                     ->columnSpanFull(),
@@ -92,12 +95,12 @@ class ComicResource extends Resource
                                         Forms\Components\TextInput::make('name')
                                             ->required()
                                             ->maxLength(255),
-                                            Forms\Components\TextInput::make('slug')
+                                        Forms\Components\TextInput::make('slug')
                                             ->required()
                                             ->maxLength(255)
                                     ])
                                     ->searchable(),
-                
+
                                 Forms\Components\Select::make('tags')
                                     ->relationship('tags', 'name')
                                     ->multiple()
@@ -114,15 +117,15 @@ class ComicResource extends Resource
                             ->schema([
                                 Forms\Components\Placeholder::make('chapters_count')
                                     ->label('Total Chapters')
-                                    ->content(fn (?Comic $record): int => $record?->chapters()->count() ?? 0),
-                
+                                    ->content(fn(?Comic $record): int => $record?->chapters()->count() ?? 0),
+
                                 Forms\Components\Placeholder::make('total_reads')
                                     ->label('Total Reads')
-                                    ->content(fn (?Comic $record): int => $record?->chapters()->sum('read_count') ?? 0),
-                
+                                    ->content(fn(?Comic $record): int => $record?->chapters()->sum('read_count') ?? 0),
+
                                 Forms\Components\Placeholder::make('total_votes')
                                     ->label('Total Votes')
-                                    ->content(fn (?Comic $record): int => $record?->chapters()->sum('vote_count') ?? 0),
+                                    ->content(fn(?Comic $record): int => $record?->chapters()->sum('vote_count') ?? 0),
                             ]),
                     ])
                     ->columnSpan(['lg' => 1]),
@@ -130,33 +133,34 @@ class ComicResource extends Resource
             ->columns(3);
     }
 
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('media.url')
+                Tables\Columns\ImageColumn::make('thumbnail_url')
                     ->label('Thumbnail')
                     ->circular()
-                    ->defaultImageUrl(fn () => asset('images/placeholder.jpg')),
-                
+                    ->defaultImageUrl(fn() => asset('images/placeholder.jpg')),
+
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('author.name')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'ongoing' => 'success',
                         'completed' => 'info',
                         'hiatus' => 'warning',
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),
-                
+
                 Tables\Columns\TextColumn::make('chapters_count')
                     ->counts('chapters')
                     ->label('Chapters')
@@ -166,7 +170,7 @@ class ComicResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -180,12 +184,12 @@ class ComicResource extends Resource
                         'hiatus' => 'Hiatus',
                         'cancelled' => 'Cancelled',
                     ]),
-                
+
                 Tables\Filters\SelectFilter::make('author')
                     ->relationship('author', 'name')
                     ->searchable()
                     ->preload(),
-                
+
                 Tables\Filters\SelectFilter::make('genres')
                     ->relationship('genres', 'name')
                     ->searchable()
@@ -225,6 +229,9 @@ class ComicResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->withChapterStats();
+        return parent::getEloquentQuery()
+        ->withChapterStats()
+        ->with(['media.media']);
     }
+
 }
