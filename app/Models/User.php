@@ -52,7 +52,7 @@ class User extends Authenticatable
         $mediaItem = $this->media()->where('type', 'avatar')->orderBy('order')->first();
         
         if ($mediaItem && $mediaItem->media) {
-            return $mediaItem->media->path;
+            return $mediaItem->media->url;
         }
         
         return null;

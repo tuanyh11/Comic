@@ -197,7 +197,7 @@ const ProfileForm = () => {
                                     />
                                 ) : user?.avatar ? (
                                     <img
-                                        src={`storage/${user?.avatar}`}
+                                        src={`${user?.avatar}`}
                                         alt="Current avatar"
                                         className="h-full w-full object-cover"
                                     />

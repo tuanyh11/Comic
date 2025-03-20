@@ -1,11 +1,12 @@
 // LoginPage.jsx
-import { router, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { AlertCircle, Check, Lock, Mail, Sun } from 'lucide-react';
-import { useState } from 'react';
 
 const Login = () => {
     const { errors, flash } = usePage().props;
-    const [formData, setFormData] = useState({
+
+    // Using Inertia's useForm instead of React's useState
+    const { data, setData, post, processing } = useForm({
         email: '',
         password: '',
         remember: false,
@@ -13,15 +14,12 @@ const Login = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value,
-        });
+        setData(name, type === 'checkbox' ? checked : value);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        router.post('/login', formData);
+        post('/login');
     };
 
     const handleGoogleLogin = () => {
@@ -137,7 +135,7 @@ const Login = () => {
                                         required
                                         className="block w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-3 text-gray-700 placeholder-gray-400 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-400"
                                         placeholder="Nhập địa chỉ email của bạn"
-                                        value={formData.email}
+                                        value={data.email}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -176,7 +174,7 @@ const Login = () => {
                                         required
                                         className="block w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-3 text-gray-700 placeholder-gray-400 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-400"
                                         placeholder="Nhập mật khẩu của bạn"
-                                        value={formData.password}
+                                        value={data.password}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -195,7 +193,7 @@ const Login = () => {
                                 name="remember"
                                 type="checkbox"
                                 className="h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400"
-                                checked={formData.remember}
+                                checked={data.remember}
                                 onChange={handleChange}
                             />
                             <label
@@ -209,9 +207,10 @@ const Login = () => {
                         <div>
                             <button
                                 type="submit"
+                                disabled={processing}
                                 className="group relative flex w-full justify-center rounded-xl border border-transparent bg-gradient-to-r from-blue-500 to-pink-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all duration-300 hover:from-blue-600 hover:to-pink-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             >
-                                Đăng nhập
+                                {processing ? 'Đang xử lý...' : 'Đăng nhập'}
                             </button>
                         </div>
 
@@ -230,6 +229,7 @@ const Login = () => {
                         {/* Social Login */}
                         <div>
                             <button
+                                type="button"
                                 onClick={handleGoogleLogin}
                                 className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
                             >

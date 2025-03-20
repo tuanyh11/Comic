@@ -8,7 +8,6 @@ interface AvatarProps {
 }
 
 const Avatar: FC<AvatarProps> = ({ user, size }) => {
-    console.log(user);
     const sizeClasses = size === 'md' ? 'h-8 w-8' : 'h-6 w-6';
     if (user?.avatar) {
         return (
@@ -16,7 +15,7 @@ const Avatar: FC<AvatarProps> = ({ user, size }) => {
                 className={`${sizeClasses} flex-shrink-0 overflow-hidden rounded-full`}
             >
                 <img
-                    src={`/storage/${user.avatar}`}
+                    src={`${user.avatar}`}
                     alt={`${user.name}'s avatar`}
                     className="h-full w-full object-cover"
                 />

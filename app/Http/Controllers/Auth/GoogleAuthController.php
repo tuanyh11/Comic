@@ -32,6 +32,7 @@ class GoogleAuthController extends Controller
      */
     public function callback(): RedirectResponse
     {
+
         try {
             $googleUser = Socialite::driver('google')->user();
             // Check if user already exists by email or google_id
@@ -50,7 +51,7 @@ class GoogleAuthController extends Controller
 
                 // Add Google avatar
                 if ($googleUser->getAvatar()) { 
-                    $imageInfo = getimagesize($googleUser->getAvatar());
+                    $imageInfo = @getimagesize($googleUser->getAvatar());
                     // Create the Media record
                     $media = new \App\Models\Media();
                     $media->name = 'google_avatar_' . $user->id;
@@ -92,7 +93,9 @@ class GoogleAuthController extends Controller
             return redirect()->intended(route('home', absolute: false));
         } catch (Exception $e) {
             // Log the error and redirect back with an error message
-            Log::error('Google login error: ' . json_decode($e));
+            Log::error('Google login error: ' . $e->getMessage());
+            Log::error('Error class: ' . get_class($e));
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect('/login')->with('error', 'Đăng nhập Google không thành công. Vui lòng thử lại sau.');
         }
     }
