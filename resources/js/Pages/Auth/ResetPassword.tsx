@@ -1,10 +1,10 @@
-import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
+import { Lock, Mail } from 'lucide-react';
 import { FormEventHandler } from 'react';
+import AuthButton from './Partials/AuthButton';
+import AuthInput from './Partials/AuthInput';
 
 export default function ResetPassword({
     token,
@@ -36,23 +36,23 @@ export default function ResetPassword({
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
 
-                    <TextInput
+                    <AuthInput
                         id="email"
                         type="email"
                         name="email"
                         value={data.email}
                         className="mt-1 block w-full"
                         autoComplete="username"
+                        icon={<Mail className="h-5 w-5 text-blue-400" />}
+                        error={errors.email}
                         onChange={(e) => setData('email', e.target.value)}
                     />
-
-                    <InputError message={errors.email} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />
 
-                    <TextInput
+                    <AuthInput
                         id="password"
                         type="password"
                         name="password"
@@ -60,10 +60,10 @@ export default function ResetPassword({
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                         isFocused={true}
+                        icon={<Lock className="h-5 w-5 text-blue-400" />}
+                        error={errors.password}
                         onChange={(e) => setData('password', e.target.value)}
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -72,27 +72,25 @@ export default function ResetPassword({
                         value="Confirm Password"
                     />
 
-                    <TextInput
+                    <AuthInput
+                        id="password_confirmation"
                         type="password"
                         name="password_confirmation"
                         value={data.password_confirmation}
                         className="mt-1 block w-full"
                         autoComplete="new-password"
+                        icon={<Lock className="h-5 w-5 text-blue-400" />}
+                        error={errors.password_confirmation}
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
                         }
                     />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <AuthButton className="ms-4" processing={processing}>
                         Reset Password
-                    </PrimaryButton>
+                    </AuthButton>
                 </div>
             </form>
         </GuestLayout>

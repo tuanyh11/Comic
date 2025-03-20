@@ -52,7 +52,18 @@ class Comic extends Model
             ->withSum('chapters', 'vote_count');
     }
 
+    protected $appends = ['thumbnail'];
 
+     public function getThumbnailAttribute(): ?string
+    {
+        $mediaItem = $this->media()->where('type', Comic::class)->orderBy('order')->first();
+        
+        if ($mediaItem && $mediaItem->media) {
+            return $mediaItem->media->url;
+        }
+        
+        return null;
+    }
 
- protected $with = ['media.media'];
+    protected $with = ['media.media'];
 }

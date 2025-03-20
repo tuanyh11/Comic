@@ -1,10 +1,10 @@
-import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
+import { Lock } from 'lucide-react';
 import { FormEventHandler } from 'react';
+import AuthButton from './Partials/AuthButton';
+import AuthInput from './Partials/AuthInput';
 
 export default function ConfirmPassword() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -32,23 +32,23 @@ export default function ConfirmPassword() {
                 <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />
 
-                    <TextInput
+                    <AuthInput
                         id="password"
                         type="password"
                         name="password"
                         value={data.password}
                         className="mt-1 block w-full"
                         isFocused={true}
+                        icon={<Lock className="h-5 w-5 text-blue-400" />}
+                        error={errors.password}
                         onChange={(e) => setData('password', e.target.value)}
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <AuthButton className="ms-4" processing={processing}>
                         Confirm
-                    </PrimaryButton>
+                    </AuthButton>
                 </div>
             </form>
         </GuestLayout>

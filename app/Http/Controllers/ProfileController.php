@@ -3,22 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\Media;
-use App\Models\MediaItem;
 use App\Models\User;
+use App\Services\ProfileService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    /**
+     * The profile service instance.
+     */
+    protected $profileService;
+
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     /**
      * Display the user's profile form.
      */
@@ -38,72 +47,16 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-public function update(Request $request)
-{
-    $user = Auth::user();
-
-    $validated = $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-        'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-        'avatar' => ['nullable', 'image', 'max:1024'],
-    ]);
-
-    // Handle avatar upload and store in media table
-    if ($request->hasFile('avatar')) {
-        $file = $request->file('avatar');
+    public function update(Request $request)
+    {
+        $user = Auth::user();
         
-        // Generate a unique name
-        $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $extension = $file->getClientOriginalExtension();
+        if(!$user) return redirect('/login');
+        // Use the profile service to handle the update
+        $this->profileService->updateProfile($request, $user);
         
-        // Store the file
-        $path = $file->storeAs('avatars', $name, 'public');
-        
-        // Get file dimensions for images
-        $width = null;
-        $height = null;
-        if (str_starts_with($file->getMimeType(), 'image/')) {
-            list($width, $height) = getimagesize($file->getRealPath());
-        }
-        
-        // Create media record with the correct fields based on your model
-        $media = new Media();
-        $media->name = $name;
-        $media->path = $path;
-        $media->type = $file->getMimeType();
-        $media->size = $file->getSize();
-        $media->alt = $user->name . ' avatar';
-        $media->width = $width;
-        $media->height = $height;
-        $media->ext = $extension; 
-        $media->save();
-
-        // Check if the user already has a media item for avatar
-        // If yes, detach previous avatar
-        $user->media()->delete();
-
-        // Create a new media item and attach it to the user
-        $mediaItem = new MediaItem();
-        $mediaItem->media_id = $media->id;
-        $mediaItem->mediable_id = $user->id;
-        $mediaItem->mediable_type = User::class;
-        $mediaItem->order = 1; // First/primary media item
-        $mediaItem->type = 'avatar'; // Set the type column to 'avatar'
-        $mediaItem->save();
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
-
-    $user->name = $validated['name'];
-    $user->email = $validated['email'];
-    
-    if (!empty($validated['password'])) {
-        $user->password = Hash::make($validated['password']);
-    }
-
-    $user->save();
-
-    return redirect()->back()->with('success', 'Profile updated successfully.');
-}
 
     /**
      * Delete the user's account.
@@ -126,6 +79,9 @@ public function update(Request $request)
         return Redirect::to('/');
     }
 
+    /**
+     * Log the user out.
+     */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
@@ -134,5 +90,4 @@ public function update(Request $request)
         
         return Redirect::to('/login');
     }
-    
 }
