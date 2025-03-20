@@ -44,6 +44,20 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
+    protected $appends = ['avatar'];
+
+    public function getAvatarAttribute(): ?string
+    {
+        $mediaItem = $this->media()->where('type', 'avatar')->orderBy('order')->first();
+        
+        if ($mediaItem && $mediaItem->media) {
+            return $mediaItem->media->path;
+        }
+        
+        return null;
+    }
+
     /**
      * Get the attributes that should be cast.
      *

@@ -42,6 +42,9 @@ const Header = () => {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchResultsRef = useRef<HTMLDivElement>(null);
 
+    console.log('====================================');
+    console.log(auth);
+    console.log('====================================');
     // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

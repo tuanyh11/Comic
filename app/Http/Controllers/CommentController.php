@@ -22,7 +22,7 @@ class CommentController extends Controller
         $comments = Comment::where('chapter_id', $chapter_id)
             ->select('id', 'content', 'user_id', 'chapter_id', 'created_at', 'parent_id') // Chọn các trường cần thiết từ comments
             ->with(['user' => function ($query) {
-                $query->select('id', 'avatar', 'name'); // Chọn các trường từ users
+                $query->select('id', 'name'); // Chọn các trường từ users
             }])->get();
         
         return response()->json($comments);
