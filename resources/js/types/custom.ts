@@ -60,6 +60,9 @@ export type Comic = {
     tags: Tag[];
     chapters: Chapter[];
     description: string;
+    read_count: number;
+    vote_count: number;
+    genres: Genre[];
 };
 
 export type Chapter = {

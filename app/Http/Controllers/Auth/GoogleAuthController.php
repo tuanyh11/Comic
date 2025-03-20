@@ -72,7 +72,7 @@ class GoogleAuthController extends Controller
             
         } catch (Exception $e) {
             // Log the error and redirect back with an error message
-            Log::error('Google login error: ' . $e->getMessage());
+            Log::error('Google login error: ' . $e);
             return redirect('/login')->with('error', 'Đăng nhập Google không thành công. Vui lòng thử lại sau.');
         }
     }

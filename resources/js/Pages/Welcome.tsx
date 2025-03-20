@@ -1,6 +1,6 @@
 import { Comic } from '@/types/custom';
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, Eye, Heart, Play } from 'lucide-react';
+import { Eye, Heart, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
@@ -155,22 +155,6 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                         </h1>
 
                         <div className="mb-4 mt-4 flex flex-wrap items-center gap-3 text-sm">
-                            {currentComic.rating && (
-                                <>
-                                    <div className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 backdrop-blur-sm">
-                                        <span className="font-bold text-yellow-400">
-                                            ★
-                                        </span>
-                                        <span className="font-bold">
-                                            {currentComic.rating}
-                                        </span>
-                                        <span className="text-gray-300">
-                                            ({currentComic.votes})
-                                        </span>
-                                    </div>
-                                </>
-                            )}
-
                             {/* Read Count */}
                             <div className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 backdrop-blur-sm">
                                 <Eye className="h-4 w-4 text-blue-300" />
@@ -188,12 +172,6 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                                         0}
                                 </span>
                             </div>
-
-                            {currentComic.year && (
-                                <div className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 backdrop-blur-sm">
-                                    <span>{currentComic.year}</span>
-                                </div>
-                            )}
 
                             {currentComic.author && (
                                 <div className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 backdrop-blur-sm">
@@ -328,7 +306,7 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                                         }
                                     >
                                         <div className="relative h-60 bg-gradient-to-br from-blue-900 to-pink-900 shadow-lg">
-                                            {comic?.media?.length > 0 ? (
+                                            {comic?.media?.length > 0 && (
                                                 <img
                                                     src={
                                                         comic.media[0].media.url
@@ -344,33 +322,6 @@ export default function Welcome({ featuredComic, comicList }: Props) {
                                                             : 'brightness-75'
                                                     } h-full w-full object-cover transition-all duration-500`}
                                                 />
-                                            ) : comic.image ? (
-                                                <img
-                                                    src={comic.image}
-                                                    alt={comic.title}
-                                                    className={`${
-                                                        selectedComicId ===
-                                                        comic.id
-                                                            ? 'scale-105 brightness-110'
-                                                            : 'brightness-75'
-                                                    } h-full w-full object-cover transition-all duration-500`}
-                                                />
-                                            ) : (
-                                                <div
-                                                    className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-800 to-pink-800 text-xs text-white/70 transition-colors duration-300 ${
-                                                        selectedComicId ===
-                                                        comic.id
-                                                            ? 'from-blue-700 to-pink-700 text-white'
-                                                            : ''
-                                                    }`}
-                                                >
-                                                    {comic.title}
-                                                </div>
-                                            )}
-
-                                            {/* Selected Indicator */}
-                                            {selectedComicId === comic.id && (
-                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-pink-500"></div>
                                             )}
                                         </div>
 

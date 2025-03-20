@@ -174,7 +174,7 @@ const Header = () => {
             <div className="flex items-center justify-between p-4 md:px-6">
                 <div className="flex items-center space-x-4">
                     <Link
-                        href="/"
+                        href="/comic"
                         className="text-xl font-bold text-white md:text-2xl"
                     >
                         <img

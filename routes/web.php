@@ -55,7 +55,7 @@ Route::get('/', function () {
     if(empty($featuredComic) || empty($comicList)) {
         return Inertia::render('Empty');
     }
-    return Inertia::render('Welcome', [
+    return Inertia::render('Welcome/index', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,

@@ -38,72 +38,72 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(Request $request)
-    {
-        $user = Auth::user();
+public function update(Request $request)
+{
+    $user = Auth::user();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'avatar' => ['nullable', 'image', 'max:1024'],
-        ]);
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+        'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        'avatar' => ['nullable', 'image', 'max:1024'],
+    ]);
 
-        // Handle avatar upload and store in media table
-        if ($request->hasFile('avatar')) {
-            $file = $request->file('avatar');
-            
-            // Generate a unique name
-            $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $extension = $file->getClientOriginalExtension();
-            
-            // Store the file
-            $path = $file->storeAs('avatars', $name, 'public');
-            
-            // Get file dimensions for images
-            $width = null;
-            $height = null;
-            if (str_starts_with($file->getMimeType(), 'image/')) {
-                list($width, $height) = getimagesize($file->getRealPath());
-            }
-            
-            // Create media record with the correct fields based on your model
-            $media = new Media();
-            $media->name = $name;
-            $media->path = $path;
-            $media->type = $file->getMimeType();
-            $media->size = $file->getSize();
-            $media->alt = $user->name . ' avatar';
-            $media->width = $width;
-            $media->height = $height;
-            $media->ext = $extension; 
-            $media->save();
-
-            // Check if the user already has a media item for avatar
-            // If yes, detach previous avatar
-            $user->media()->delete();
-
-            // Create a new media item and attach it to the user
-            $mediaItem = new MediaItem();
-            $mediaItem->media_id = $media->id;
-            $mediaItem->mediable_id = $user->id;
-            $mediaItem->mediable_type = User::class;
-            $mediaItem->order = 1; // First/primary media item
-            $mediaItem->type = 'avatar'; // Set the type column to 'avatar'
-            $mediaItem->save();
-        }
-
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
+    // Handle avatar upload and store in media table
+    if ($request->hasFile('avatar')) {
+        $file = $request->file('avatar');
         
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
+        // Generate a unique name
+        $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $extension = $file->getClientOriginalExtension();
+        
+        // Store the file
+        $path = $file->storeAs('avatars', $name, 'public');
+        
+        // Get file dimensions for images
+        $width = null;
+        $height = null;
+        if (str_starts_with($file->getMimeType(), 'image/')) {
+            list($width, $height) = getimagesize($file->getRealPath());
         }
+        
+        // Create media record with the correct fields based on your model
+        $media = new Media();
+        $media->name = $name;
+        $media->path = $path;
+        $media->type = $file->getMimeType();
+        $media->size = $file->getSize();
+        $media->alt = $user->name . ' avatar';
+        $media->width = $width;
+        $media->height = $height;
+        $media->ext = $extension; 
+        $media->save();
 
-        $user->save();
+        // Check if the user already has a media item for avatar
+        // If yes, detach previous avatar
+        $user->media()->delete();
 
-        return redirect()->back()->with('success', 'Profile updated successfully.');
+        // Create a new media item and attach it to the user
+        $mediaItem = new MediaItem();
+        $mediaItem->media_id = $media->id;
+        $mediaItem->mediable_id = $user->id;
+        $mediaItem->mediable_type = User::class;
+        $mediaItem->order = 1; // First/primary media item
+        $mediaItem->type = 'avatar'; // Set the type column to 'avatar'
+        $mediaItem->save();
     }
+
+    $user->name = $validated['name'];
+    $user->email = $validated['email'];
+    
+    if (!empty($validated['password'])) {
+        $user->password = Hash::make($validated['password']);
+    }
+
+    $user->save();
+
+    return redirect()->back()->with('success', 'Profile updated successfully.');
+}
 
     /**
      * Delete the user's account.
