@@ -5,20 +5,29 @@ namespace App\Http\Controllers;
 use App\Models\Chapter;
 use App\Services\PaymentService;
 use App\Services\ReadingService;
+use App\Services\ChapterAccessService;
+use App\Services\VoteService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
 class ChapterController extends Controller
 {
-
     protected PaymentService $paymentService;
     protected ReadingService $readingService;
+    protected ChapterAccessService $chapterAccessService;
+    protected VoteService $voteService;
 
-    public function __construct(PaymentService $paymentService, ReadingService $readingService)
-    {
+    public function __construct(
+        PaymentService $paymentService, 
+        ReadingService $readingService,
+        ChapterAccessService $chapterAccessService,
+        VoteService $voteService
+    ) {
         $this->paymentService = $paymentService;
         $this->readingService = $readingService;
+        $this->chapterAccessService = $chapterAccessService;
+        $this->voteService = $voteService;
     }
 
     public function show($id, $chapter_id)
@@ -26,43 +35,21 @@ class ChapterController extends Controller
         $chapter = Chapter::where('id', $chapter_id)
             ->with('media')
             ->firstOrFail();
-
-        // Kiểm tra xem người dùng hiện tại đã vote chưa
-        $hasVoted = false;
-
-        // Kiểm tra xem chapter có phải nội dung trả phí không
-        $isPaidContent = $chapter->isPaidContent();
-
-        // Mặc định trạng thái là chưa mở khóa
-        $isUnlocked = false;
-
-        if (Auth::check()) {
-            $user = Auth::user();
-            $hasVoted = $chapter->voters()->where('user_id', $user->id)->exists();
-
-            // Nếu là nội dung trả phí, kiểm tra xem người dùng đã mua chưa
-            if ($isPaidContent) {
-                $isUnlocked = $chapter->isAccessibleBy($user);
-            }
+        
+        $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
+        
+        // Merge access data with chapter
+        foreach ($accessData as $key => $value) {
+            $chapter->$key = $value;
         }
-
-        // Nếu chapter không phải nội dung trả phí, đánh dấu là đã mở khóa
-        if (!$isPaidContent) {
-            $isUnlocked = true;
-        }
-
-        // Thêm thông tin đã vote và trạng thái mở khóa vào dữ liệu trả về
-        $chapter->has_voted = $hasVoted;
-        $chapter->is_paid_content = $isPaidContent;
-        $chapter->is_unlocked = $isUnlocked;
-
-        // Ghi lại lượt đọc nếu đã đăng nhập và chapter đã mở khóa
-        if ($isUnlocked && Auth::check()) {
+        
+        // Record reading if unlocked and authenticated
+        if ($accessData['is_unlocked'] && Auth::check()) {
             $this->readingService->recordReading(Auth::user(), $chapter);
         }
 
-        // Nếu là nội dung trả phí và chưa được mở khóa, chuyển hướng đến trang mua chapter
-        if ($isPaidContent && !$isUnlocked) {
+        // Redirect to purchase page if content is paid and not unlocked
+        if ($accessData['is_paid_content'] && !$accessData['is_unlocked']) {
             return Inertia::render('Comic/ChapterLocked', [
                 "chapter" => $chapter,
                 "walletBalance" => Auth::check() ? $this->paymentService->getWalletBalance(Auth::user()) : 0
@@ -79,43 +66,21 @@ class ChapterController extends Controller
         $chapter = Chapter::where('id', $chapter_id)
             ->with('media')
             ->firstOrFail();
-
-        // Kiểm tra xem người dùng hiện tại đã vote chưa
-        $hasVoted = false;
-
-        // Kiểm tra xem chapter có phải nội dung trả phí không
-        $isPaidContent = $chapter->isPaidContent();
-
-        // Mặc định trạng thái là chưa mở khóa
-        $isUnlocked = false;
-
-        if (Auth::check()) {
-            $user = Auth::user();
-            $hasVoted = $chapter->voters()->where('user_id', $user->id)->exists();
-
-            // Nếu là nội dung trả phí, kiểm tra xem người dùng đã mua chưa
-            if ($isPaidContent) {
-                $isUnlocked = $chapter->isAccessibleBy($user);
-            }
+        
+        $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
+        
+        // Merge access data with chapter
+        foreach ($accessData as $key => $value) {
+            $chapter->$key = $value;
         }
-
-        // Nếu chapter không phải nội dung trả phí, đánh dấu là đã mở khóa
-        if (!$isPaidContent) {
-            $isUnlocked = true;
-        }
-
-        // Thêm thông tin đã vote và trạng thái mở khóa vào dữ liệu trả về
-        $chapter->has_voted = $hasVoted;
-        $chapter->is_paid_content = $isPaidContent;
-        $chapter->is_unlocked = $isUnlocked;
-
-        // Tăng số lượt đọc nếu người dùng có quyền truy cập vào chapter
-        if ($isUnlocked) {
+        
+        // Increment read count if unlocked
+        if ($accessData['is_unlocked']) {
             $chapter->increment('read_count');
         }
 
-        // Nếu là nội dung trả phí và chưa được mở khóa, chuyển hướng đến trang mua chapter
-        if ($isPaidContent && !$isUnlocked) {
+        // Redirect to purchase page if content is paid and not unlocked
+        if ($accessData['is_paid_content'] && !$accessData['is_unlocked']) {
             return Inertia::render('Comic/ChapterLocked', [
                 "chapter" => $chapter,
                 "walletBalance" => Auth::check() ? $this->paymentService->getWalletBalance(Auth::user()) : 0
@@ -128,11 +93,11 @@ class ChapterController extends Controller
     }
 
     /**
-     * Xử lý vote cho chapter
+     * Handle voting for a chapter
      */
     public function vote(Request $request, $chapter_id)
     {
-        // Kiểm tra người dùng đã đăng nhập
+        // Check if user is authenticated
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Bạn cần đăng nhập để vote'
@@ -141,40 +106,22 @@ class ChapterController extends Controller
 
         $chapter = Chapter::findOrFail($chapter_id);
         $user = Auth::user();
-
-        // Kiểm tra nếu là nội dung trả phí, người dùng cần mở khóa trước khi vote
-        if ($chapter->isPaidContent() && !$chapter->isAccessibleBy($user)) {
+        
+        // Check if paid content is accessible
+        if (!$this->chapterAccessService->canUserAccessChapter($user, $chapter)) {
             return response()->json([
                 'message' => 'Bạn cần mở khóa chapter này trước khi vote'
             ], 403);
         }
 
-        // Kiểm tra xem người dùng đã vote chưa
-        $hasVoted = $chapter->voters()->where('user_id', $user->id)->exists();
-
-        if ($hasVoted) {
-            // Nếu đã vote, hủy vote
-            $chapter->voters()->detach($user->id);
-            $chapter->decrement('vote_count');
-            $message = 'Đã hủy vote thành công';
-            $voted = false;
-        } else {
-            // Nếu chưa vote, thêm vote
-            $chapter->voters()->attach($user->id);
-            $chapter->increment('vote_count');
-            $message = 'Đã vote thành công';
-            $voted = true;
-        }
-
-        return response()->json([
-            'message' => $message,
-            'voted' => $voted,
-            'vote_count' => $chapter->vote_count
-        ]);
+        // Toggle vote and get result
+        $voteResult = $this->voteService->toggleVote($user, $chapter);
+        
+        return response()->json($voteResult);
     }
 
     /**
-     * Hiển thị trang mua chapter
+     * Display purchase page
      */
     public function purchase(Chapter $chapter)
     {
@@ -182,8 +129,8 @@ class ChapterController extends Controller
             return redirect()->route('login')->with('message', 'Vui lòng đăng nhập để mua chapter');
         }
 
-        // Nếu người dùng đã mua chapter này, chuyển hướng đến trang chapter
-        if ($chapter->isAccessibleBy(Auth::user())) {
+        // If user already purchased this chapter, redirect to chapter page
+        if ($this->chapterAccessService->isChapterAccessibleBy(Auth::user(), $chapter)) {
             return redirect()->route('chapters.show', $chapter->id);
         }
 
@@ -194,7 +141,7 @@ class ChapterController extends Controller
     }
 
     /**
-     * Xử lý mua chapter
+     * Process purchase
      */
     public function processPurchase(Request $request, Chapter $chapter)
     {
@@ -206,18 +153,17 @@ class ChapterController extends Controller
 
         $user = Auth::user();
 
-        // Kiểm tra xem người dùng đã mua chapter này chưa
-        if ($chapter->isAccessibleBy($user)) {
+        // Check if user already purchased this chapter
+        if ($this->chapterAccessService->isChapterAccessibleBy($user, $chapter)) {
             return response()->json([
                 'message' => 'Bạn đã mua chapter này rồi',
                 'success' => true
             ]);
         }
 
-        // TODO: Thêm logic xử lý thanh toán ở đây
-        // Ví dụ: Kiểm tra số dư tài khoản, trừ tiền, v.v.
-
-        // Ghi nhận việc mua chapter
+        // TODO: Add payment processing logic here
+        
+        // Record purchase
         $chapter->purchasedBy()->create([
             'user_id' => $user->id,
             'price' => $chapter->pricing
@@ -230,41 +176,41 @@ class ChapterController extends Controller
     }
 
     /**
-     * Mua chapter bằng số dư ví
+     * Purchase with wallet
      */
-public function purchaseWithWallet($slug, $chapter_id)
-{
-    if (!Auth::check()) {
-        return redirect()->route('login');
+    public function purchaseWithWallet($slug, $chapter_id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $user = Auth::user();
+        $chapter = Chapter::findOrFail($chapter_id);
+        $comic = $chapter->comic;
+
+        // Check if chapter is paid content
+        if (!$chapter->isPaidContent()) {
+            return redirect()->back()->with('error', 'Chapter này là nội dung miễn phí');
+        }
+
+        // Check if user already purchased this chapter
+        if ($this->chapterAccessService->isChapterAccessibleBy($user, $chapter)) {
+            return redirect()->route('chapter.show', [
+                'slug' => $comic->slug,
+                'chapter_id' => $chapter->id
+            ])->with('error', 'Bạn đã mua chapter này rồi');
+        }
+
+        // Use PaymentService to purchase chapter
+        try {
+            $purchase = $this->paymentService->purchaseChapter($user, $chapter);
+
+            return redirect()->route('chapter.show', [
+                'slug' => $comic->slug,
+                'chapter_id' => $chapter->id
+            ])->with('success', 'Mua chapter thành công');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
-
-    $user = Auth::user();
-    $chapter = Chapter::findOrFail($chapter_id);
-    $comic = $chapter->comic;
-
-    // Kiểm tra xem chapter có phải nội dung trả phí không
-    if (!$chapter->isPaidContent()) {
-        return redirect()->back()->with('error', 'Chapter này là nội dung miễn phí');
-    }
-
-    // Kiểm tra xem người dùng đã mua chapter này chưa
-    if ($chapter->isAccessibleBy($user)) {
-        return redirect()->route('chapter.show', [
-            'slug' => $comic->slug,
-            'chapter_id' => $chapter->id
-        ])->with('info', 'Bạn đã mua chapter này rồi');
-    }
-
-    // Sử dụng PaymentService để mua chapter
-    try {
-        $purchase = $this->paymentService->purchaseChapter($user, $chapter);
-
-        return redirect()->route('chapter.show', [
-            'slug' => $comic->slug,
-            'chapter_id' => $chapter->id
-        ])->with('success', 'Mua chapter thành công');
-    } catch (\Exception $e) {
-        return redirect()->back()->with('error', $e->getMessage());
-    }
-}
 }

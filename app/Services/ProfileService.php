@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Media;
-use App\Models\MediaItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +10,19 @@ use Illuminate\Validation\Rule;
 
 class ProfileService
 {
+    /**
+     * The media service instance.
+     */
+    protected $mediaService;
+
+    /**
+     * Create a new service instance.
+     */
+    public function __construct(MediaService $mediaService)
+    {
+        $this->mediaService = $mediaService;
+    }
+
     /**
      * Validate profile update data
      */
@@ -39,76 +50,11 @@ class ProfileService
         
         // Handle avatar upload if present
         if ($request->hasFile('avatar')) {
-            $this->updateUserAvatar($request, $user);
+            $this->mediaService->updateUserAvatar($request, $user);
         }
         
         // Update user basic information
         $this->updateUserInformation($user, $validated);
-    }
-    
-    /**
-     * Update the user's avatar
-     */
-    public function updateUserAvatar(Request $request, User $user): void
-    {
-        $file = $request->file('avatar');
-        
-        // Generate a unique name
-        $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $extension = $file->getClientOriginalExtension();
-        
-        // Store the file
-        $path = $file->storeAs('avatars', $name, 'public');
-        
-        // Create media record
-        $media = $this->createMediaRecord($file, $path, $name, $extension, $user->name);
-        
-        // Remove previous avatar if exists
-        $user->media()->delete();
-        
-        // Create and attach new media item
-        $this->attachMediaToUser($media, $user);
-    }
-    
-    /**
-     * Create a new media record
-     */
-    private function createMediaRecord($file, string $path, string $name, string $extension, string $userName): Media
-    {
-        // Get file dimensions for images
-        $width = null;
-        $height = null;
-        if (str_starts_with($file->getMimeType(), 'image/')) {
-            list($width, $height) = getimagesize($file->getRealPath());
-        }
-        
-        // Create media record with the correct fields
-        $media = new Media();
-        $media->name = $name;
-        $media->path = $path;
-        $media->type = $file->getMimeType();
-        $media->size = $file->getSize();
-        $media->alt = $userName . ' avatar';
-        $media->width = $width;
-        $media->height = $height;
-        $media->ext = $extension; 
-        $media->save();
-        
-        return $media;
-    }
-    
-    /**
-     * Attach media to user
-     */
-    private function attachMediaToUser(Media $media, User $user): void
-    {
-        $mediaItem = new MediaItem();
-        $mediaItem->media_id = $media->id;
-        $mediaItem->mediable_id = $user->id;
-        $mediaItem->mediable_type = User::class;
-        $mediaItem->order = 1; // First/primary media item
-        $mediaItem->type = 'avatar'; // Set the type column to 'avatar'
-        $mediaItem->save();
     }
     
     /**
@@ -124,5 +70,44 @@ class ProfileService
         }
         
         $user->save();
+    }
+    
+    /**
+     * Create or update user from social login
+     */
+    public function handleSocialLogin(string $socialId, string $name, string $email, ?string $avatarUrl = null): User
+    {
+        // Check if user already exists by email or social_id
+        $user = User::where('email', $email)
+            ->orWhere('google_id', $socialId)
+            ->first();
+
+        // If user doesn't exist, create a new one
+        if (!$user) {
+            $user = User::create([
+                'name' => $name,
+                'email' => $email,
+                'google_id' => $socialId,
+                'password' => Hash::make(Str::random(16)), // Random secure password
+            ]);
+
+            // Create a wallet for the new user if needed
+            if (method_exists($user, 'wallet') && !$user->wallet) {
+                $user->wallet()->create([
+                    'balance' => 0,
+                ]);
+            }
+        } else if (!$user->google_id) {
+            // If user exists by email but no Google ID, update it
+            $user->google_id = $socialId;
+            $user->save();
+        }
+
+        // Add social avatar if provided and user doesn't have one
+        if ($avatarUrl && !$user->avatar) {
+            $this->mediaService->updateUserAvatarFromUrl($avatarUrl, $user);
+        }
+
+        return $user;
     }
 }

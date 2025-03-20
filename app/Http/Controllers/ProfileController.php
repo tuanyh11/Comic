@@ -50,11 +50,10 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        
-        if(!$user) return redirect('/login');
+
+        if (!$user) return redirect('/login');
         // Use the profile service to handle the update
         $this->profileService->updateProfile($request, $user);
-        
         return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 
@@ -87,7 +86,7 @@ class ProfileController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return Redirect::to('/login');
     }
 }

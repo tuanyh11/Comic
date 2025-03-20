@@ -31,11 +31,10 @@ class ComicController extends Controller
                 // Thêm số lượt đọc của mỗi chương
                 $query->orderBy('order', 'asc');
             }])
-            ->with('thumbnail')
-            ->with('tags')
+            ->with(['thumbnail', 'tags'])
             ->firstOrFail();
 
-        // Lấy số dư ví của người dùng
+        // Lấy số dư ví của người 
         $walletBalance = 0;
         $user = Auth::user();
 

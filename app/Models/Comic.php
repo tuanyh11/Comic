@@ -54,15 +54,27 @@ class Comic extends Model
 
     protected $appends = ['thumbnail'];
 
-     public function getThumbnailAttribute(): ?string
+    public function getThumbnailAttribute(): ?Model
     {
-        $mediaItem = $this->media()->where('type', Comic::class)->orderBy('order')->first();
-        
+        $mediaItem = $this->media()
+            ->with('media') // Eager load chỉ cho truy vấn này
+            ->orderBy('order')
+            ->first();
+
         if ($mediaItem && $mediaItem->media) {
-            return $mediaItem->media->url;
+            return $mediaItem->media;
         }
-        
+
         return null;
+    }
+
+    public function scopeWithThumbnail($query)
+    {
+        return $query->with(['media' => function ($query) {
+            $query->with('media')
+                ->orderBy('order')
+                ->take(1);
+        }]);
     }
 
     protected $with = ['media.media'];

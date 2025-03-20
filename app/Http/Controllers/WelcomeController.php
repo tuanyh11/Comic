@@ -13,10 +13,10 @@ class WelcomeController extends Controller
       public function index()
     {
         // Lấy truyện nổi bật - truyện có lượt đọc cao nhất
-        $featuredComic = Comic::with(['author' => function ($query) {
+        $featuredComic = Comic::withThumbnail()
+            ->with(['author' => function ($query) {
                 $query->select('id', 'name');
             }])
-            ->with('media.media')
             ->with('genres')
             ->with(['chapters' => function($query) {
                 $query->count();
@@ -26,7 +26,7 @@ class WelcomeController extends Controller
             ->first();
 
         // Lấy danh sách truyện cho carousel
-        $comicList = Comic::with('media.media')
+        $comicList = Comic::withThumbnail()
             ->with('genres')
             ->with(['chapters' => function($query) {
                 $query->count();
@@ -37,7 +37,7 @@ class WelcomeController extends Controller
             ->get();
             
         if(empty($featuredComic) || empty($comicList)) {
-            return Inertia::render('Empty');
+            return redirect('/login');
         }
         
         return Inertia::render('Welcome/index', [

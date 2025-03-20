@@ -17,7 +17,9 @@ interface Props {
 
 export default function Welcome({ featuredComic, comicList }: Props) {
     const [currentComic, setCurrentComic] = useState<Comic>(featuredComic);
-
+    console.log('====================================');
+    console.log(comicList);
+    console.log('====================================');
     return (
         <>
             <Head title="Comic Collection" />

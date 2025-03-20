@@ -1,6 +1,5 @@
 import DefaultLayout from '@/Layouts/DefaultLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     BanknoteIcon,
@@ -13,28 +12,25 @@ import {
 import { useState } from 'react';
 
 const AddFundsPage = () => {
-    const { auth, wallet, flash } = usePage().props;
+    const { wallet, flash } = usePage().props;
     const [amount, setAmount] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Sử dụng useForm hook từ Inertia.js
+    const { setData, post, processing, errors } = useForm({
+        amount: '',
+    });
+
+    // Cập nhật cả state local và form data khi số tiền thay đổi
+    const handleAmountChange = (value: string) => {
+        setAmount(value);
+        setData('amount', value);
+    };
 
     // Handle form submission through Inertia router
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        try {
-            const { data } = await axios.post(
-                route('payment.vnpay.create-wallet-payment'),
-                {
-                    amount: amount,
-                },
-            );
-
-            window.location.href = data.url;
-        } catch (error) {
-            console.error('Payment error:', error);
-            setIsSubmitting(false);
-        }
+        post(route('payment.vnpay.create-wallet-payment'));
     };
 
     return (
@@ -56,9 +52,15 @@ const AddFundsPage = () => {
                         </Link>
                     </div>
 
-                    {flash?.error && (
+                    {flash?.message && (
                         <div className="mb-6 rounded-lg border-l-4 border-red-500 bg-red-50 p-4 text-red-700">
-                            <p>{flash.error}</p>
+                            <p>{flash.message}</p>
+                        </div>
+                    )}
+
+                    {errors.amount && (
+                        <div className="mb-6 rounded-lg border-l-4 border-red-500 bg-red-50 p-4 text-red-700">
+                            <p>{errors.amount}</p>
                         </div>
                     )}
 
@@ -116,7 +118,9 @@ const AddFundsPage = () => {
                                                 step="1"
                                                 value={amount}
                                                 onChange={(e) =>
-                                                    setAmount(e.target.value)
+                                                    handleAmountChange(
+                                                        e.target.value,
+                                                    )
                                                 }
                                                 className="block w-full rounded-lg border-gray-300 pl-10 pr-12 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                 placeholder="10,000"
@@ -147,7 +151,9 @@ const AddFundsPage = () => {
                                                 key={value}
                                                 type="button"
                                                 onClick={() =>
-                                                    setAmount(value.toString())
+                                                    handleAmountChange(
+                                                        value.toString(),
+                                                    )
                                                 }
                                                 className={`rounded-lg border p-3 text-center transition-all ${
                                                     amount === value.toString()
@@ -163,10 +169,10 @@ const AddFundsPage = () => {
 
                                     <button
                                         type="submit"
-                                        disabled={isSubmitting || !amount}
+                                        disabled={processing || !amount}
                                         className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-pink-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all hover:from-blue-700 hover:to-pink-600 disabled:opacity-50"
                                     >
-                                        {isSubmitting ? (
+                                        {processing ? (
                                             <>
                                                 <svg
                                                     className="-ml-1 mr-2 h-4 w-4 animate-spin text-white"

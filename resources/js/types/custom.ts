@@ -63,6 +63,7 @@ export type Comic = {
     read_count: number;
     vote_count: number;
     genres: Genre[];
+    thumbnail: Media;
 };
 
 export type Chapter = {

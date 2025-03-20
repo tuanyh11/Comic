@@ -126,11 +126,8 @@ const ComicCarousel: React.FC<ComicCarouselProps> = ({
                             <div className="relative h-60 bg-gradient-to-br from-blue-900 to-pink-900 shadow-lg">
                                 {comic?.media?.length > 0 && (
                                     <img
-                                        src={comic.media[0].media.url}
-                                        alt={
-                                            comic.media[0].media.alt ||
-                                            comic.title
-                                        }
+                                        src={comic.thumbnail.url}
+                                        alt={comic.thumbnail.alt || comic.title}
                                         className={`${
                                             selectedComicId === comic.id
                                                 ? 'scale-105 brightness-110'

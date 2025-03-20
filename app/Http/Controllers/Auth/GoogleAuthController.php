@@ -3,18 +3,33 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Services\ProfileService;
 use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
+    /**
+     * Profile service instance
+     * 
+     * @var ProfileService
+     */
+    protected $profileService;
+
+    /**
+     * Create a new controller instance.
+     * 
+     * @param ProfileService $profileService
+     */
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     /**
      * Redirect the user to the Google authentication page.
      *
@@ -32,54 +47,19 @@ class GoogleAuthController extends Controller
      */
     public function callback(): RedirectResponse
     {
-
         try {
             $googleUser = Socialite::driver('google')->user();
-            // Check if user already exists by email or google_id
-            $user = User::where('email', $googleUser->getEmail())
-                ->orWhere('google_id', $googleUser->getId())
-                ->first();
+            
+            // Use profile service to handle Google login
+            $user = $this->profileService->handleSocialLogin(
+                $googleUser->getId(),
+                $googleUser->getName(),
+                $googleUser->getEmail(),
+                $googleUser->getAvatar()
+            );
 
-            // If user doesn't exist, create a new one
-            if (!$user) {
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'password' => Hash::make(Str::random(16)), // Random secure password as they'll login via Google
-                ]);
-
-                // Add Google avatar
-                if ($googleUser->getAvatar()) { 
-                    $imageInfo = @getimagesize($googleUser->getAvatar());
-                    // Create the Media record
-                    $media = new \App\Models\Media();
-                    $media->name = 'google_avatar_' . $user->id;
-                    $media->path = $googleUser->getAvatar();
-                    $media->type = $imageInfo['mime']; // Assuming it's a JPEG, adjust if needed
-                    $media->size = 0; // External image, size unknown
-                    $media->alt = $user->name . ' avatar';
-                    $media->ext = explode('/', $imageInfo['mime'])[1]; // Assuming JPEG format
-                    $media->save();
-
-                    // Create the MediaItem to attach to user
-                    $mediaItem = new \App\Models\MediaItem();
-                    $mediaItem->media_id = $media->id;
-                    $mediaItem->mediable_id = $user->id;
-                    $mediaItem->mediable_type = User::class;
-                    $mediaItem->order = 1;
-                    $mediaItem->type = 'avatar';
-                    $mediaItem->save();
-                }
-
-                // Create a wallet for the new user if needed
-                if (method_exists($user, 'wallet') && !$user->wallet) {
-                    $user->wallet()->create([
-                        'balance' => 0,
-                    ]);
-                }
-
-                // Fire registered event
+            // If this is a newly created user, fire registered event
+            if ($user->wasRecentlyCreated) {
                 event(new Registered($user));
             }
 

@@ -14,6 +14,6 @@ export type PageProps<
         currency: string;
     };
     flash: {
-        message: string;
+        errors: string;
     };
 };

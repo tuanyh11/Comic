@@ -13,8 +13,8 @@ const ComicBackground: React.FC<ComicBackgroundProps> = ({ comic }) => {
                 {comic?.media?.length > 0 ? (
                     <div className="relative h-full w-full">
                         <img
-                            src={comic.media[0].media.url}
-                            alt={comic.media[0].media.alt}
+                            src={comic.thumbnail.url}
+                            alt={comic.thumbnail.alt}
                             className="h-full w-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 to-pink-900/40 mix-blend-multiply"></div>

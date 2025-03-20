@@ -1,6 +1,7 @@
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import RecommendedComics from '@/Components/UI/RecommendedComics';
 import DefaultLayout from '@/Layouts/DefaultLayout';
-import { Comic } from '@/types/custom';
+import { Chapter, Comic } from '@/types/custom';
 import { Link, router } from '@inertiajs/react';
 import { BookOpen, HeartIcon, MessagesSquare, User } from 'lucide-react';
 import { FC, useState } from 'react';
@@ -12,41 +13,53 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
     const [isFollowing, setIsFollowing] = useState(false);
     const [isBookmarked, setIsBookmarked] = useState(false);
 
+    // Modal states
+    const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+    const [showFundsModal, setShowFundsModal] = useState(false);
+    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(
+        null,
+    );
+
     const toggleFollow = () => setIsFollowing(!isFollowing);
     const toggleBookmark = () => setIsBookmarked(!isBookmarked);
 
     // Xử lý click vào chapter cần mở khóa
-    const handleChapterClick = async (chapter) => {
+    const handleChapterClick = async (chapter: Chapter) => {
         // Nếu chapter miễn phí hoặc đã mở khóa, điều hướng trực tiếp đến chapter
         if (!chapter.pricing || chapter.is_unlocked) {
             router.visit(`/comic/${comic.slug}/chapter/${chapter.id}`);
             return;
         }
 
-        // Nếu có đủ tiền trong ví, xác nhận mua chapter
+        // Lưu lại chapter được chọn để sử dụng trong modal
+        setSelectedChapter(chapter);
+
+        // Nếu có đủ tiền trong ví, hiện modal xác nhận mua chapter
         if (walletBalance >= chapter.pricing) {
-            if (
-                confirm(
-                    `Bạn có muốn mua chapter này với giá ${chapter.pricing} VND không?`,
-                )
-            ) {
-                router.post(
-                    route('chapter.purchase-with-wallet', {
-                        slug: comic.slug, // Sai: Đang dùng ID thay vì slug
-                        chapter_id: chapter.id,
-                    }),
-                );
-            }
+            setShowPurchaseModal(true);
         } else {
-            // Nếu không đủ tiền, chuyển đến trang nạp tiền
-            if (
-                confirm(
-                    'Số dư trong ví không đủ. Bạn có muốn nạp thêm tiền không?',
-                )
-            ) {
-                router.visit('/wallet/add-funds');
-            }
+            // Nếu không đủ tiền, hiện modal chuyển đến trang nạp tiền
+            setShowFundsModal(true);
         }
+    };
+
+    // Xử lý mua chapter
+    const handlePurchaseConfirm = () => {
+        if (selectedChapter) {
+            router.post(
+                route('chapter.purchase-with-wallet', {
+                    slug: comic.slug,
+                    chapter_id: selectedChapter.id,
+                }),
+            );
+        }
+        setShowPurchaseModal(false);
+    };
+
+    // Xử lý nạp tiền
+    const handleAddFundsConfirm = () => {
+        router.visit('/wallet/add-funds');
+        setShowFundsModal(false);
     };
 
     const readCount = comic.chapters.reduce((a, b) => a + b.read_count, 0);
@@ -61,6 +74,30 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
     return (
         <DefaultLayout>
             <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-blue-50 to-pink-50 py-12 font-sans">
+                {/* Purchase Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={showPurchaseModal}
+                    title="Xác nhận mua chương"
+                    message={`Bạn có muốn mua chương này với giá ${selectedChapter?.pricing || 0} VND không?`}
+                    confirmText="Mua ngay"
+                    cancelText="Hủy"
+                    type="info"
+                    onConfirm={handlePurchaseConfirm}
+                    onCancel={() => setShowPurchaseModal(false)}
+                />
+
+                {/* Insufficient Funds Modal */}
+                <ConfirmationModal
+                    isOpen={showFundsModal}
+                    title="Số dư không đủ"
+                    message="Số dư trong ví không đủ để mua chương này. Bạn có muốn nạp thêm tiền không?"
+                    confirmText="Nạp tiền ngay"
+                    cancelText="Để sau"
+                    type="warning"
+                    onConfirm={handleAddFundsConfirm}
+                    onCancel={() => setShowFundsModal(false)}
+                />
+
                 {/* Main Content */}
                 <main className="mx-auto max-w-6xl p-4">
                     {/* Story Header */}
@@ -87,7 +124,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                             <div className="mt-6 space-y-3">
                                 {comic.chapters[0] ? (
                                     <Link
-                                        href={`/comic/${comic.id}/chapter/${comic.chapters[0]?.id}`}
+                                        href={`/comic/${comic.slug}/chapter/${comic.chapters[0]?.id}`}
                                         className="block w-full transform rounded-full bg-gradient-to-r from-blue-500 to-pink-500 py-3 text-center font-bold text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                                     >
                                         Bắt đầu đọc
