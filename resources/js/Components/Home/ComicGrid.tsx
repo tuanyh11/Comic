@@ -5,6 +5,7 @@ import ComicCard from './ComicCard';
 
 interface ComicGridProps {
     comics: (Comic & Pick<Chapter, 'read_count' | 'vote_count'>)[];
+    // gridRef: React.RefObject<HTMLDivElement>;
 }
 
 const ComicGrid: FC<ComicGridProps> = ({ comics }) => {

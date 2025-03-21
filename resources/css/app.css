@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--scroll-padding-top, 74px);
+}
+
+
+
 .book-container {
     display: flex;
     align-items: center;

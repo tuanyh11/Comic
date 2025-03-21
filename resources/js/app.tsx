@@ -4,10 +4,27 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { FC, PropsWithChildren, useEffect } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { ToastContainer } from 'react-toastify';
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Comic';
 const queryClient = new QueryClient();
+
+const AppProvider: FC<PropsWithChildren> = ({ children }) => {
+    useEffect(() => {
+        document.documentElement.style.setProperty(
+            '--scroll-padding-top',
+            `${document.getElementById('header')?.offsetHeight}px`,
+        );
+    }, []);
+    return (
+        <QueryClientProvider client={queryClient}>
+            {children}
+            <ToastContainer />
+        </QueryClientProvider>
+    );
+};
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) =>
@@ -19,20 +36,18 @@ createInertiaApp({
         if (import.meta.env.SSR) {
             hydrateRoot(
                 el,
-                <QueryClientProvider client={queryClient}>
+                <AppProvider>
                     <App {...props} />
-                    <ToastContainer />
-                </QueryClientProvider>,
+                </AppProvider>,
             );
             return;
         }
 
         createRoot(el).render(
             <>
-                <QueryClientProvider client={queryClient}>
+                <AppProvider>
                     <App {...props} />
-                    <ToastContainer />
-                </QueryClientProvider>
+                </AppProvider>
             </>,
         );
     },

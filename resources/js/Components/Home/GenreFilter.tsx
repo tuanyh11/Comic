@@ -6,12 +6,13 @@ import { FC } from 'react';
 
 interface GenreFilterProps {
     genres: Genre[];
+    gridRef: React.RefObject<HTMLDivElement>;
 }
 interface CustomPageProps extends PageProps {
     genreFilters: string;
 }
 
-const GenreFilter: FC<GenreFilterProps> = ({ genres }) => {
+const GenreFilter: FC<GenreFilterProps> = ({ genres, gridRef }) => {
     const { genreFilters } = usePage<CustomPageProps>().props;
 
     const activeGenreId = genreFilters ? parseInt(genreFilters) : null;
@@ -19,15 +20,32 @@ const GenreFilter: FC<GenreFilterProps> = ({ genres }) => {
     const handleGenreClick = (genre: Genre) => {
         if (activeGenreId === genre.id) {
             // If already active, clear the filter
-            router.get(route('home'));
+            router.get(
+                route('home'),
+                {},
+                {
+                    onSuccess: scrollToView,
+                },
+            );
         } else {
             // Otherwise, apply the filter
-            router.get(route('home', { genre: genre.id }));
+            router.get(
+                route('home', { genre: genre.id }),
+                {},
+                {
+                    onSuccess: scrollToView,
+                },
+            );
         }
     };
 
+    const scrollToView = () =>
+        gridRef.current?.scrollIntoView({ behavior: 'smooth' });
     return (
-        <div className="mb-8 flex space-x-4 overflow-x-auto py-2">
+        <div
+            id="home-genre"
+            className="mb-8 flex space-x-4 overflow-x-auto py-2"
+        >
             {genres.map((genre) => (
                 <button
                     key={genre.id}

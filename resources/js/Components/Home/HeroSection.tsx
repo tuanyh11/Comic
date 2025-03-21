@@ -4,7 +4,7 @@ import { FC } from 'react';
 
 const HeroSection: FC = () => {
     return (
-        <div className="relative mb-8 overflow-hidden">
+        <div className="relative overflow-hidden">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <img
@@ -28,13 +28,13 @@ const HeroSection: FC = () => {
                         </p>
                         <div className="flex gap-4">
                             <Link
-                                href="#featured"
+                                href="#home-comic"
                                 className="rounded-full bg-white px-6 py-3 font-medium text-blue-600 shadow-lg transition-all duration-300 hover:bg-blue-50 hover:shadow-blue-300/50"
                             >
                                 Khám phá ngay
                             </Link>
                             <Link
-                                href="/genres"
+                                href="#home-genre"
                                 className="rounded-full border border-white bg-transparent px-6 py-3 font-medium text-white transition-all duration-300 hover:bg-white/10"
                             >
                                 Xem thể loại

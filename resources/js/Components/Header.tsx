@@ -172,7 +172,10 @@ const Header = () => {
     };
 
     return (
-        <header className="sticky top-0 z-20 bg-gradient-to-r from-blue-500 to-pink-500 shadow-md">
+        <header
+            id="header"
+            className="sticky top-0 z-20 bg-gradient-to-r from-blue-500 to-pink-500 shadow-md"
+        >
             {/* Desktop Header */}
             <div className="flex items-center justify-between p-4 md:px-6">
                 <div className="flex items-center space-x-4">
