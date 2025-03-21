@@ -66,7 +66,9 @@ class VNPayController extends Controller
         
         try {
             $paymentUrl = $this->vnpayService->createPaymentUrlForChapter($user, $chapter);
-            return redirect($paymentUrl);
+             return Inertia::render('Redirect', [
+                'url' => $paymentUrl
+            ]);
         } catch (\Exception $e) {
             Log::error('VNPay chapter payment creation failed: ' . $e->getMessage());
             return back()->withErrors(['message' => 'Failed to create payment: ' . $e->getMessage()]);

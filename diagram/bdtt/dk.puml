@@ -1,51 +1,48 @@
 @startuml
 hide footbox
 skinparam sequenceMessageAlign center
+skinparam lifelineStrategy solid
 skinparam SequenceLifeLineBorderColor grey
 skinparam SequenceLifeLineBorderThickness 1
-
+skinparam ParticipantPadding 30
+skinparam BoxPadding 10
+skinparam SequenceBoxBackgroundColor white
+skinparam SequenceGroupBackgroundColor white
+skinparam SequenceMessageAlignment center
 !define ACTOR_STYLE stereotype actor
 !define BOUNDARY_STYLE stereotype boundary
 !define CONTROL_STYLE stereotype control
 !define DATABASE_STYLE stereotype database
-
 skinparam backgroundColor white
 skinparam title {
   FontSize 20
   FontStyle bold
 }
+title Biểu đồ trình tự cho chức năng "Đăng ký" 
+actor "Độc Giả" as KH
 
-title Biểu đồ trình tự cho chức năng "Đăng ký"
-
-
-actor "user" as KH 
-participant "Form Đăng Ký" as FDK 
-participant "Đăng Ký control" as DKC 
-participant "CSDL" as CSDL 
-
-KH ->> FDK: 1 : Yêu cầu đăng ký tài khoản
-activate FDK
-
-FDK ->> DKC: 2 : Hiển thị form
-activate DKC
-deactivate FDK
-
-DKC -->> KH: 3 : Yêu cầu nhập thông tin cá nhân
-deactivate DKC
-
-KH ->> DKC: 4 : Nhập thông tin cá nhân
-activate DKC
-
-DKC ->> CSDL: 5 : Gửi thông tin lên CSDL
-activate CSDL
-
-CSDL ->> CSDL: 6 : Kiểm tra thông tin
-activate CSDL #DarkSalmon
-deactivate CSDL
-
-CSDL -->> DKC: 7 : Trả về kết quả
-deactivate CSDL
-
-DKC -->> KH: 8 : Phản hồi
-deactivate DKC
+participant "Đăng ký\n(Controller)" as C
+participant "Đăng ký\n(View)" as V
+participant "UserModel\n(Model)" as M 
+participant "CSDL\n(Database)" as DB 
+KH ->> C: 1: Truy cập URL đăng ký
+activate C
+C ->> V: 2: Khởi tạo và trả về View đăng ký
+activate V
+V -->> KH: 3: Yêu cầu nhập thông tin
+deactivate V
+KH ->> C: 4: Nhập thông tin và submit
+C ->> C: 5: Kiểm tra
+activate C #DarkSalmon
+deactivate C
+C ->> M: 6: Yêu cầu khởi tạo Người dùng mới
+activate M
+M ->> DB: 7: Lưu dữ liệu
+activate DB
+DB -->> M: 8: Trả về kết quả
+deactivate DB
+M -->> C: 9: Trả về kết quả
+deactivate M
+C -->> KH: 10: Trả về kết quả
+deactivate C
 @enduml

@@ -1,57 +1,47 @@
 @startuml
 hide footbox
 skinparam sequenceMessageAlign center
+skinparam lifelineStrategy solid
 skinparam SequenceLifeLineBorderColor grey
 skinparam SequenceLifeLineBorderThickness 1
-
+skinparam ParticipantPadding 30
+skinparam BoxPadding 10
+skinparam SequenceBoxBackgroundColor white
+skinparam SequenceGroupBackgroundColor white
+skinparam SequenceMessageAlignment center
 !define ACTOR_STYLE stereotype actor
 !define BOUNDARY_STYLE stereotype boundary
 !define CONTROL_STYLE stereotype control
 !define DATABASE_STYLE stereotype database
-
 skinparam backgroundColor white
 skinparam title {
   FontSize 20
   FontStyle bold
 }
-
-title Biểu đồ trình tự cho chức năng "Đăng nhập"
-
-
-actor "user" as KH 
-participant "Form Đăng Nhập" as FDN 
-participant "Đăng Nhập control" as DNC 
-participant "CSDL" as CSDL 
-
-KH ->> FDN: 1 : Yêu cầu đăng nhập tài khoản
-activate FDN
-
-FDN ->> DNC: 2 : Hiển thị form
-activate DNC
-deactivate FDN
-
-DNC -->> KH: 3 : Yêu cầu nhập tên đăng nhập và mật khẩu
-deactivate DNC
-
-KH ->> DNC: 4 : Nhập tên đăng nhập và mật khẩu
-activate DNC
-
-DNC ->> CSDL: 5 : Gửi thông tin xác thực lên CSDL
-activate CSDL
-
-CSDL ->> CSDL: 6 : Kiểm tra thông tin đăng nhập
-activate CSDL #DarkSalmon
-deactivate CSDL
-
-CSDL -->> DNC: 7 : Trả về kết quả xác thực
-deactivate CSDL
-
-alt Đăng nhập thành công
-    DNC -->> KH: 8.1 : Thông báo đăng nhập thành công
-    DNC -->> KH: 8.2 : Chuyển đến trang chính
-else Đăng nhập thất bại
-    DNC -->> KH: 8.3 : Thông báo đăng nhập thất bại
-    DNC -->> KH: 8.4 : Yêu cầu nhập lại thông tin
-end
-deactivate DNC
+title Biểu đồ trình tự cho chức năng "Đăng nhập" 
+actor "Độc Giả" as KH
+participant "Đăng nhập\n(Controller)" as C
+participant "Đăng nhập\n(View)" as V
+participant "UserModel\n(Model)" as M 
+participant "CSDL\n(Database)" as DB 
+KH ->> C: 1: Truy cập URL đăng nhập
+activate C
+C ->> V: 2: Khởi tạo và trả về View đăng nhập
+activate V
+V -->> KH: 3: Yêu cầu nhập thông tin đăng nhập
+deactivate V
+KH ->> C: 4: Nhập tên đăng nhập, mật khẩu và submit
+C ->> C: 5: Kiểm tra dữ liệu đầu vào
+activate C #DarkSalmon
+deactivate C
+C ->> M: 6: Yêu cầu xác thực đăng nhập
+activate M
+M ->> DB: 7: Truy vấn thông tin người dùng
+activate DB
+DB -->> M: 8: Trả về kết quả xác thực
+deactivate DB
+M -->> C: 9: Trả về kết quả xác thực
+deactivate M
+C -->> KH: 10: Trả về kết quả đăng nhập
+deactivate C
 @enduml

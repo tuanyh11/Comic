@@ -133,12 +133,21 @@ const ChapterLocked: FC<ChapterLockedProps> = ({ chapter, walletBalance }) => {
                                 </Link>
                             )}
 
-                            <Link
-                                href={`/payment/vnpay/create-chapter-payment/${chapter.id}`}
+                            <button
+                                onClick={() =>
+                                    router.post(
+                                        route(
+                                            'payment.vnpay.create-chapter-payment',
+                                            {
+                                                chapter: chapter.id,
+                                            },
+                                        ),
+                                    )
+                                }
                                 className="w-full rounded-lg bg-blue-500 px-4 py-3 text-center font-bold text-white hover:bg-blue-600"
                             >
                                 Thanh toán qua VNPay
-                            </Link>
+                            </button>
 
                             <Link
                                 href={`/comic/${chapter.comic_id}`}

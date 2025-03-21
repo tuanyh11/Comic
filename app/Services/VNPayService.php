@@ -74,7 +74,7 @@ class VNPayService
         $vnp_OrderInfo = 'Purchase chapter ' . $chapter->id . ' for user: ' . $user->id;
         $vnp_OrderType = 'purchase';
         $vnp_TxnRef = $this->generateTransactionRef();
-        $vnp_Amount = $chapter->pricing * 100 * 23000; // Convert to VND (assuming price is in USD)
+        $vnp_Amount = $chapter->pricing * 100; // Convert to VND (assuming price is in USD)
         $vnp_IpAddr = request()->ip();
         
         // Store transaction info in session
