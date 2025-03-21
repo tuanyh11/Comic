@@ -33,9 +33,6 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        // if($request->user()) {
-        //     $request->user() = $request->user()->media->first()->media->path;
-        // }
         return [
             ...parent::share($request),
             'auth' => [
@@ -45,6 +42,23 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'notifications' => function () use ($request) {
+                if (!$request->user()) {
+                    return [];
+                }
+                return $request->user()->notifications()
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->get()
+                    ;
+            },
+            'unreadNotificationsCount' => function () use ($request) {
+                if (!$request->user()) {
+                    return 0;
+                }
+                return $request->user()->unreadNotifications()->count();
+            }
+            ,
             'wallet' => function () use ($request) {
                 if (!$request->user()) {
                     return null;

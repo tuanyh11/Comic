@@ -1,6 +1,6 @@
 import { Comment, LaravelPagination, User } from '@/types/custom';
 import { formatDate } from '@/utils/formatDate';
-import { Heart, MessageCircle, MoreVertical, Reply } from 'lucide-react';
+import { MessageCircle, MoreVertical, Reply } from 'lucide-react';
 import { FC, useState } from 'react';
 import Avatar from './Avatar';
 import { CommentForm } from './CommentForm';
@@ -28,8 +28,7 @@ export const CommentItem: FC<CommentItemProps> = ({
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const [replyText, setReplyText] = useState('');
     const [currentReplyPage, setCurrentReplyPage] = useState<number>(1);
-    const [isLiked, setIsLiked] = useState(false);
- 
+
     const handleReply = () => {
         if (replyText.trim()) {
             onReply(comment.id, replyText);
@@ -42,10 +41,6 @@ export const CommentItem: FC<CommentItemProps> = ({
         const nextPage = currentReplyPage + 1;
         loadMoreReplies(comment.id, nextPage);
         setCurrentReplyPage(nextPage);
-    };
-
-    const handleLike = () => {
-        setIsLiked(!isLiked);
     };
 
     // Số lượng replies đã được tải

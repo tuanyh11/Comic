@@ -1,14 +1,11 @@
+import { PageProps } from '@/types';
 import { Check } from 'lucide-react';
 import React from 'react';
-
-interface FlashMessage {
-    message: string;
-}
 
 interface AuthCardProps {
     title: string;
     subtitle?: React.ReactNode;
-    flash?: FlashMessage;
+    flash?: PageProps['flash'];
     children: React.ReactNode;
 }
 
@@ -38,11 +35,11 @@ const AuthCard: React.FC<AuthCardProps> = ({
                 </div>
 
                 {/* Flash Messages */}
-                {flash && flash.message && (
+                {flash && flash.errors && (
                     <div className="mb-6 flex items-start rounded-lg border-l-4 border-green-400 bg-green-100 p-4">
                         <Check className="mr-3 mt-0.5 h-5 w-5 text-green-500" />
                         <div className="text-sm text-green-700">
-                            {flash.message}
+                            {flash.errors}
                         </div>
                     </div>
                 )}

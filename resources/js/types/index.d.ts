@@ -1,5 +1,5 @@
 import { Config } from 'ziggy-js';
-import { User } from './custom';
+import { Notification, User } from './custom';
 
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
@@ -13,6 +13,8 @@ export type PageProps<
 
         currency: string;
     };
+    notifications: Notification[];
+    unreadNotificationsCount: number;
     flash: {
         errors: string;
     };

@@ -41,15 +41,6 @@ class ReadingService
                     'last_read_at' => $now
                 ]);
             }
-
-            // Tăng lượt đọc chỉ khi thỏa mãn điều kiện
-            if ($shouldIncrementCount) {
-                $chapter->increment('read_count');
-                
-                // Cập nhật tổng lượt đọc của comic
-                // $comic = Comic::find($comicId);
-                // $comic->increment('read_count');
-            }
         });
     }
 

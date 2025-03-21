@@ -16,7 +16,7 @@
     <style>
         ._df_book {
             background: linear-gradient(to right, #3b82f6, #ec4899);
-            height: 100vh;
+            height: 100vh !important;
         }
         body {
             min-height: 100dvh;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\API\NotificationController as APINotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('notifications')->group(function () {
-    Route::get('/', [NotificationController::class, 'index']);
-    Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
-    Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+    Route::get('/', [APINotificationController::class, 'index']);
+    Route::post('/{id}/mark-as-read', [APINotificationController::class, 'markAsRead']);
+    Route::post('/mark-all-as-read', [APINotificationController::class, 'markAllAsRead']);
 });

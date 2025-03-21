@@ -1,7 +1,6 @@
-import { Comment } from '@/types/custom';
+import type { Comment, Notification } from '@/types/custom';
 import { formatDate } from '@/utils/formatDate';
-import { Link } from '@inertiajs/react';
-import axios from 'axios';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Bell, Check, MessageCircle } from 'lucide-react';
 import Pusher from 'pusher-js';
 import { FC, useEffect, useState } from 'react';
@@ -12,19 +11,27 @@ interface NotificationsDropdownProps {
 
 const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<Notification<Comment>[]>(
+        [],
+    );
     const [unreadCount, setUnreadCount] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
+    const notificationsData = usePage().props.notifications;
+    const unreadCountData = usePage().props.unreadNotificationsCount;
+
+    // console.log('====================================');
+    // console.log(notifications);
+    // console.log('====================================');
     useEffect(() => {
         // Fetch initial notifications
-        fetchNotifications();
-
         // Set up Pusher subscription
         const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
             cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
         });
 
+        setNotifications(notificationsData);
+        setUnreadCount(unreadCountData);
         // Subscribe to the user's private channel
         const channel = pusher.subscribe(`private-user.${userId}`);
 
@@ -66,36 +73,29 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
         };
     }, [userId]);
 
-    const fetchNotifications = async () => {
-        setLoading(true);
-        try {
-            const response = await axios.get('/notifications');
-            console.log('====================================');
-            console.log(response);
-            console.log('====================================');
-            setNotifications(response.data.notifications);
-            setUnreadCount(response.data.unread_count);
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const markAsRead = async (id: string) => {
         try {
-            await axios.post(`/notifications/${id}/mark-as-read`);
-
-            // Update local state
-            setNotifications(
-                notifications.map((notification) =>
-                    notification.id === id
-                        ? { ...notification, read_at: new Date().toISOString() }
-                        : notification,
-                ),
+            router.post(
+                `/notifications/${id}/mark-as-read`,
+                {},
+                {
+                    preserveState: true,
+                    onSuccess: () => {
+                        // Update local state
+                        setNotifications(
+                            notifications.map((notification) =>
+                                notification.id === id
+                                    ? {
+                                          ...notification,
+                                          read_at: new Date().toISOString(),
+                                      }
+                                    : notification,
+                            ),
+                        );
+                        setUnreadCount((prev) => Math.max(0, prev - 1));
+                    },
+                },
             );
-
-            setUnreadCount((prev) => Math.max(0, prev - 1));
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
@@ -103,17 +103,25 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
 
     const markAllAsRead = async () => {
         try {
-            await axios.post('/notifications/mark-all-as-read');
-
-            // Update local state
-            setNotifications(
-                notifications.map((notification) => ({
-                    ...notification,
-                    read_at: notification.read_at || new Date().toISOString(),
-                })),
+            router.post(
+                '/notifications/mark-all-as-read',
+                {},
+                {
+                    preserveState: true,
+                    onSuccess: () => {
+                        // Update local state
+                        setNotifications(
+                            notifications.map((notification) => ({
+                                ...notification,
+                                read_at:
+                                    notification.read_at ||
+                                    new Date().toISOString(),
+                            })),
+                        );
+                        setUnreadCount(0);
+                    },
+                },
             );
-
-            setUnreadCount(0);
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
         }
@@ -201,10 +209,6 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
                                                             0,
                                                             100,
                                                         )}
-                                                        {comment?.content
-                                                            ?.length > 100
-                                                            ? '...'
-                                                            : ''}
                                                     </div>
                                                 </div>
                                             </div>
