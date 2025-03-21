@@ -14,50 +14,55 @@ interface PaginationProps {
 const Pagination: FC<PaginationProps> = ({ pagination }) => {
     return (
         <div className="mt-12 flex items-center justify-center">
-            <div className="flex items-center space-x-2">
-                <Link
-                    href={
-                        pagination.prev_page_url
-                            ? pagination.prev_page_url.replace('/', '/comic')
-                            : '#'
-                    }
-                    className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        pagination.prev_page_url
-                            ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
-                            : 'cursor-not-allowed bg-gray-100 text-gray-400'
-                    }`}
-                    preserveScroll
-                >
-                    <ChevronLeft className="h-5 w-5" />
-                </Link>
-
-                {[...Array(pagination.last_page)].map((_, index) => (
+            {pagination.last_page > 1 && (
+                <div className="flex items-center space-x-2">
                     <Link
-                        key={index}
-                        href={`/comic?page=${index + 1}`}
+                        href={
+                            pagination.prev_page_url
+                                ? pagination.prev_page_url.replace(
+                                      '/',
+                                      '/comic',
+                                  )
+                                : '#'
+                        }
                         className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                            pagination.current_page === index + 1
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-white text-blue-600 shadow hover:bg-blue-50'
+                            pagination.prev_page_url
+                                ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
+                                : 'cursor-not-allowed bg-gray-100 text-gray-400'
                         }`}
                         preserveScroll
                     >
-                        {index + 1}
+                        <ChevronLeft className="h-5 w-5" />
                     </Link>
-                ))}
 
-                <Link
-                    href={pagination.next_page_url || '#'}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        pagination.next_page_url
-                            ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
-                            : 'cursor-not-allowed bg-gray-100 text-gray-400'
-                    }`}
-                    preserveScroll
-                >
-                    <ChevronRight className="h-5 w-5" />
-                </Link>
-            </div>
+                    {[...Array(pagination.last_page)].map((_, index) => (
+                        <Link
+                            key={index}
+                            href={`/comic?page=${index + 1}`}
+                            className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                                pagination.current_page === index + 1
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-blue-600 shadow hover:bg-blue-50'
+                            }`}
+                            preserveScroll
+                        >
+                            {index + 1}
+                        </Link>
+                    ))}
+
+                    <Link
+                        href={pagination.next_page_url || '#'}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                            pagination.next_page_url
+                                ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
+                                : 'cursor-not-allowed bg-gray-100 text-gray-400'
+                        }`}
+                        preserveScroll
+                    >
+                        <ChevronRight className="h-5 w-5" />
+                    </Link>
+                </div>
+            )}
         </div>
     );
 };
