@@ -2,7 +2,7 @@ import { Comment } from '@/types/custom';
 import { formatDate } from '@/utils/formatDate';
 import { Heart } from 'lucide-react';
 import { FC, useState } from 'react';
-import Avatar from './Avatar';
+import Avatar from '../../../Components/UI/Avatar';
 
 interface CommentReplyProps {
     reply: Comment;

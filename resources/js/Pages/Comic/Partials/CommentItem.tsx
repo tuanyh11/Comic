@@ -2,7 +2,7 @@ import { Comment, LaravelPagination, User } from '@/types/custom';
 import { formatDate } from '@/utils/formatDate';
 import { MessageCircle, MoreVertical, Reply } from 'lucide-react';
 import { FC, useState } from 'react';
-import Avatar from './Avatar';
+import Avatar from '../../../Components/UI/Avatar';
 import { CommentForm } from './CommentForm';
 import { CommentReply } from './CommentReply';
 

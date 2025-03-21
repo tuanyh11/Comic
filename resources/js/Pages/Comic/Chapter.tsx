@@ -1,7 +1,7 @@
-import { CommentsSidebar } from '@/Components/UI/CommentsSidebar';
 import FloatingButtons from '@/Components/UI/FloatingButtons';
 import useChapterComments from '@/hooks/useChapterComments';
 import useResizable from '@/hooks/useResizable';
+import { CommentsSidebar } from '@/Pages/Comic/Partials/CommentsSidebar';
 import { PageProps } from '@/types';
 import { Chapter } from '@/types/custom';
 import { usePage } from '@inertiajs/react';
@@ -27,20 +27,26 @@ const ChapterDetail: FC = () => {
         handleMouseDown,
     } = useResizable(350);
 
+    // Sử dụng hook chính useChapterComments đã được tái cấu trúc
     const {
+        // State
         showComments,
         newComment,
-        setNewComment,
-        isSubmitting,
         commentListRef,
-        toggleComments,
+
+        // Data
         comments,
+        commentPagination,
+        replyPaginations,
+        isSubmitting,
+
+        // Actions
+        toggleComments,
+        setNewComment,
         addComment,
         addReply,
         loadMoreComments,
         loadMoreReplies,
-        commentPagination,
-        replyPaginations,
     } = useChapterComments(chapter, currentUser);
 
     const onVote = async () => {
@@ -49,6 +55,13 @@ const ChapterDetail: FC = () => {
             !pre && toast.success('vote thành công');
             return !pre;
         });
+    };
+
+    // Phương thức Submit comment được điều chỉnh để tương thích với API mới
+    const handleAddComment = () => {
+        if (newComment.trim()) {
+            addComment(newComment);
+        }
     };
 
     return (
@@ -64,8 +77,6 @@ const ChapterDetail: FC = () => {
                     />
                 )}
 
-                {/* Replace PDFViewer with PDFFlipbook */}
-                {/* <PDFFlipbook fileUrl={chapter.media.url} /> */}
                 <iframe
                     className="h-full w-full"
                     src={`${window.location.href}/iframe`}
@@ -79,14 +90,11 @@ const ChapterDetail: FC = () => {
                     className={`absolute right-auto top-0 z-20 h-full w-1 bg-black/10 backdrop-blur-sm hover:bg-blue-500 ${
                         isDragging ? 'bg-blue-500' : ''
                     }`}
-                    // style={{
-                    //     left: `calc(100% - ${sidebarWidth}px - 2px)`,
-                    // }}
                     onMouseDown={handleMouseDown}
                 />
             )}
 
-            {/* Comments Sidebar */}
+            {/* Comments Sidebar - điều chỉnh để sử dụng các props từ hook mới */}
             <CommentsSidebar
                 comments={comments}
                 currentUser={currentUser}
@@ -95,13 +103,13 @@ const ChapterDetail: FC = () => {
                 toggleComments={toggleComments}
                 newComment={newComment}
                 setNewComment={setNewComment}
-                addComment={addComment}
+                addComment={handleAddComment}
                 addReply={addReply}
                 isSubmitting={isSubmitting}
                 commentListRef={commentListRef}
                 loadMoreComments={loadMoreComments}
                 loadMoreReplies={loadMoreReplies}
-                commentPagination={commentPagination || undefined}
+                commentPagination={commentPagination}
                 replyPaginations={replyPaginations}
             />
         </div>

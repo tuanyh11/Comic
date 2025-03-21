@@ -1,7 +1,7 @@
 import { User } from '@/types/custom';
 import { Send } from 'lucide-react';
 import { FC } from 'react';
-import Avatar from './Avatar';
+import Avatar from '../../../Components/UI/Avatar';
 
 interface CommentFormProps {
     user: User;

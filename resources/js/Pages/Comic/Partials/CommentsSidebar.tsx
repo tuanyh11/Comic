@@ -1,5 +1,4 @@
 import { Comment, LaravelPagination, User } from '@/types/custom';
-import { ReplyPaginationsMap } from '@/types/custom-extensions';
 import { MessageCircle, RefreshCw, X } from 'lucide-react';
 import { FC, useMemo } from 'react';
 import { CommentForm } from './CommentForm';
@@ -20,7 +19,7 @@ interface CommentsSidebarProps {
     loadMoreComments: () => void;
     loadMoreReplies: (commentId: number, page: number) => void;
     commentPagination?: LaravelPagination<Comment>;
-    replyPaginations: ReplyPaginationsMap;
+    replyPaginations: Record<number, LaravelPagination<Comment>>; // Đã cập nhật kiểu dữ liệu
 }
 
 export const CommentsSidebar: FC<CommentsSidebarProps> = ({
@@ -57,6 +56,11 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
         });
     }, [comments]);
 
+    // Xử lý sự kiện khi người dùng nhập comment mới
+    const handleCommentChange = (value: string) => {
+        setNewComment(value);
+    };
+
     return (
         <div
             className={`fixed right-0 top-0 z-10 h-full overflow-hidden bg-gradient-to-br from-blue-600/90 to-pink-500/90 backdrop-blur-md transition-transform ${
@@ -85,7 +89,7 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
                 <CommentForm
                     user={currentUser}
                     value={newComment}
-                    onChange={setNewComment}
+                    onChange={handleCommentChange}
                     onSubmit={addComment}
                     isSubmitting={isSubmitting}
                 />
@@ -105,9 +109,7 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
                                     comment={comment}
                                     replies={replies}
                                     currentUser={currentUser}
-                                    onReply={(commentId, content) =>
-                                        addReply(commentId, content)
-                                    }
+                                    onReply={addReply}
                                     isSubmitting={isSubmitting}
                                     loadMoreReplies={loadMoreReplies}
                                     replyPagination={
