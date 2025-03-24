@@ -5,9 +5,19 @@ import HeroSection from '@/Components/Home/HeroSection';
 import Pagination from '@/Components/Home/Pagination';
 import TabsSection from '@/Components/Home/TabsSection';
 import DefaultLayout from '@/Layouts/DefaultLayout';
+import { PageProps } from '@/types';
 import { Chapter, Comic, Genre, LaravelPagination } from '@/types/custom';
-import { Head } from '@inertiajs/react';
-import { FC, useRef, useState } from 'react';
+import { Head, usePage } from '@inertiajs/react';
+import { FC, useRef } from 'react';
+
+interface HomePageProps extends PageProps {
+    comics: LaravelPagination<
+        Comic & Pick<Chapter, 'read_count' | 'vote_count'>
+    >;
+    genres: Genre[];
+    activeTab: string;
+    genreFilters: string;
+}
 
 const Home: FC<{
     comics: LaravelPagination<
@@ -15,9 +25,10 @@ const Home: FC<{
     >;
     genres: Genre[];
 }> = ({ comics, genres }) => {
-    const [activeTab, setActiveTab] = useState('for-you');
+    const { activeTab } = usePage<HomePageProps>().props;
     const comicData = comics?.data;
     const gridRef = useRef<HTMLDivElement>(null);
+
     return (
         <DefaultLayout>
             <Head>
@@ -31,10 +42,7 @@ const Home: FC<{
                     id="home-comic"
                     className="container mx-auto px-4 py-16"
                 >
-                    <TabsSection
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                    />
+                    <TabsSection activeTab={activeTab || 'for-you'} />
 
                     <GenreFilter genres={genres} gridRef={gridRef} />
 

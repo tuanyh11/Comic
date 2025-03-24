@@ -95,7 +95,7 @@ class ChapterController extends Controller
     /**
      * Handle voting for a chapter
      */
-    public function vote(Request $request, $chapter_id)
+    public function vote( $slug, $chapter_id)
     {
         // Check if user is authenticated
         if (!Auth::check()) {

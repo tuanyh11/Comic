@@ -1,9 +1,10 @@
 // RecommendedComics.tsx
 import { Comic } from '@/types/custom';
 import { Link } from '@inertiajs/react';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { BookOpen, HeartIcon } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 
 interface RecommendedComicsProps {
     currentComicId: number;
@@ -14,42 +15,30 @@ const RecommendedComics: FC<RecommendedComicsProps> = ({
     currentComicId,
     tagIds = [],
 }) => {
-    const [recommendations, setRecommendations] = useState<Comic[]>([]);
-    const [loading, setLoading] = useState(true);
+    // Fetch recommendations using React Query
+    const { data: recommendations = [], isLoading } = useQuery({
+        queryKey: ['comicRecommendations', currentComicId, tagIds],
+        queryFn: async () => {
+            const response = await axios.get('/api/comics/recommendations', {
+                params: {
+                    comic_id: currentComicId,
+                    tag_ids: tagIds.join(','),
+                    limit: 4,
+                },
+            });
 
-    useEffect(() => {
-        const fetchRecommendations = async () => {
-            try {
-                setLoading(true);
-                // Gọi API để lấy truyện đề xuất dựa trên tags và không bao gồm truyện hiện tại
-                const response = await axios.get(
-                    '/api/comics/recommendations',
-                    {
-                        params: {
-                            comic_id: currentComicId,
-                            tag_ids: tagIds.join(','),
-                            limit: 4,
-                        },
-                    },
-                );
+            return response.data as Comic[];
+        },
+        // Options
+        staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+        retry: 2, // Retry failed requests twice
+    });
 
-                console.log('====================================');
-                console.log(response);
-                console.log('====================================');
-
-                setRecommendations(response.data);
-            } catch (error) {
-                console.error('Error fetching recommendations:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRecommendations();
-    }, [currentComicId, tagIds]);
-
+    console.log('====================================');
+    console.log(recommendations);
+    console.log('====================================');
     // Hiển thị skeleton loader khi đang tải
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                 {[1, 2, 3, 4].map((index) => (
@@ -83,8 +72,9 @@ const RecommendedComics: FC<RecommendedComicsProps> = ({
                     <div className="relative aspect-[2/3] bg-gray-300">
                         <img
                             src={
-                                comic.thumbnail?.url ||
-                                `/api/placeholder/300/450`
+                                comic.media.length > 0
+                                    ? comic.media[0].media.url
+                                    : ''
                             }
                             alt={comic.title}
                             className="h-full w-full object-cover"

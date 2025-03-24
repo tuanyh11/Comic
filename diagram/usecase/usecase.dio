@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="9WcxNWN3H4HQIM8dEd6T" name="Page-1">
-        <mxGraphModel dx="762" dy="449" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="496" dy="294" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -89,7 +89,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="32" value="&lt;strong style=&quot;font-family: Inter, system-ui, -apple-system, &amp;quot;system-ui&amp;quot;, &amp;quot;Segoe UI&amp;quot;, Roboto, &amp;quot;Noto Sans&amp;quot;, Ubuntu, Cantarell, &amp;quot;Helvetica Neue&amp;quot;, Oxygen, &amp;quot;Open Sans&amp;quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt;Thống kê&lt;/strong&gt;" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontColor=default;" parent="1" vertex="1">
-                    <mxGeometry x="310" y="530" width="125" height="40" as="geometry"/>
+                    <mxGeometry x="300" y="490" width="125" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="33" value="" style="endArrow=classic;html=1;entryX=0.046;entryY=0.363;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="12" target="32" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -104,15 +104,6 @@
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="745" y="300" as="sourcePoint"/>
                         <mxPoint x="620" y="353" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="37" value="Quản lý danh&amp;nbsp;&lt;div&gt;sách Chương&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fontStyle=1" parent="1" vertex="1">
-                    <mxGeometry x="305" y="480" width="130" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="38" value="" style="endArrow=classic;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="12" target="37" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="200" y="323" as="sourcePoint"/>
-                        <mxPoint x="321" y="505" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
             </root>

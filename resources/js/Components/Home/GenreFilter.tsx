@@ -8,39 +8,33 @@ interface GenreFilterProps {
     genres: Genre[];
     gridRef: React.RefObject<HTMLDivElement>;
 }
+
 interface CustomPageProps extends PageProps {
     genreFilters: string;
+    activeTab: string;
 }
 
 const GenreFilter: FC<GenreFilterProps> = ({ genres, gridRef }) => {
-    const { genreFilters } = usePage<CustomPageProps>().props;
+    const { genreFilters, activeTab } = usePage<CustomPageProps>().props;
 
     const activeGenreId = genreFilters ? parseInt(genreFilters) : null;
 
     const handleGenreClick = (genre: Genre) => {
-        if (activeGenreId === genre.id) {
-            // If already active, clear the filter
-            router.get(
-                route('home'),
-                {},
-                {
-                    onSuccess: scrollToView,
-                },
-            );
-        } else {
-            // Otherwise, apply the filter
-            router.get(
-                route('home', { genre: genre.id }),
-                {},
-                {
-                    onSuccess: scrollToView,
-                },
-            );
+        const params: { genre?: number; tab?: string } = { tab: activeTab };
+
+        if (activeGenreId !== genre.id) {
+            // Apply the filter
+            params.genre = genre.id;
         }
+
+        router.get(route('home'), params, {
+            onSuccess: scrollToView,
+        });
     };
 
     const scrollToView = () =>
         gridRef.current?.scrollIntoView({ behavior: 'smooth' });
+
     return (
         <div
             id="home-genre"

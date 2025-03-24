@@ -9,6 +9,26 @@ import { FC, useState } from 'react';
 import { toast } from 'react-toastify';
 import { CommentsSidebar } from './Partials/CommentsSidebar';
 
+function getCurrentPageSlug() {
+    // Obter o pathname da URL atual
+    const pathname = window.location.pathname;
+
+    // Regex para extrair o slug entre "comic/" e "/chapter/"
+    const regex = /comic\/([^\/]+)\/chapter/;
+    const match = pathname.match(regex);
+
+    if (match && match[1]) {
+        return match[1];
+    }
+
+    // Alternativa usando split (caso a regex não funcione)
+    const pathSegments = pathname.split('/').filter((segment) => segment);
+    if (pathSegments.length >= 2 && pathSegments[0] === 'comic') {
+        return pathSegments[1];
+    }
+
+    return null;
+}
 const ChapterDetail: FC = () => {
     // Use Inertia's usePage to get props
     const { chapter, auth } = usePage<PageProps<{ chapter: Chapter }>>().props;
@@ -42,9 +62,13 @@ const ChapterDetail: FC = () => {
         commentPagination,
         replyPaginations,
     } = useChapterComments(chapter, currentUser);
-
     const onVote = async () => {
-        await axios.post(route('chapters.vote', { chapter_id: chapter.id }));
+        await axios.post(
+            route('chapter.vote', {
+                chapter_id: chapter.id,
+                slug: getCurrentPageSlug(),
+            }),
+        );
         setHasVoted((pre) => {
             !pre && toast.success('vote thành công');
             return !pre;

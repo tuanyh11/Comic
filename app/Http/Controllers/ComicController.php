@@ -28,10 +28,11 @@ class ComicController extends Controller
             }])
             ->with(['chapters' => function ($query) {
                 $query->withCount('comments');
+                $query->with('media.media');
                 // Thêm số lượt đọc của mỗi chương
                 $query->orderBy('order', 'asc');
             }])
-            ->with(['thumbnail', 'tags'])
+            ->with(['media.media', 'tags'])
             ->firstOrFail();
 
         // Lấy số dư ví của người 

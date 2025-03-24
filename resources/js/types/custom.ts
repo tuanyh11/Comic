@@ -70,7 +70,7 @@ export type Chapter = {
     id: number;
     title: string;
     order: number;
-    media: Media;
+    media: { media: Media }[];
     description: string;
     read_count: number;
     vote_count: number;
@@ -81,6 +81,7 @@ export type Chapter = {
     is_paid_content?: boolean;
     is_unlocked?: boolean;
     pricing: number;
+    is_read: boolean;
 };
 
 export type Comment = {

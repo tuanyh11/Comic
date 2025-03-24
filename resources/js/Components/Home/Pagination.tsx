@@ -1,6 +1,7 @@
 // @/Components/Home/Pagination.tsx
+import { PageProps } from '@/types';
 import { Comic, LaravelPagination } from '@/types/custom';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { FC } from 'react';
 
@@ -11,7 +12,29 @@ interface PaginationProps {
     >;
 }
 
+interface CustomPageProps extends PageProps {
+    genreFilters: string;
+    activeTab: string;
+}
+
 const Pagination: FC<PaginationProps> = ({ pagination }) => {
+    const { genreFilters, activeTab } = usePage<CustomPageProps>().props;
+
+    // Create query params for pagination links
+    const createParams = (page: number) => {
+        const params: Record<string, string | number> = { page };
+
+        if (genreFilters) {
+            params.genre = genreFilters;
+        }
+
+        if (activeTab) {
+            params.tab = activeTab;
+        }
+
+        return params;
+    };
+
     return (
         <div className="mt-12 flex items-center justify-center">
             {pagination.last_page > 1 && (
@@ -19,9 +42,9 @@ const Pagination: FC<PaginationProps> = ({ pagination }) => {
                     <Link
                         href={
                             pagination.prev_page_url
-                                ? pagination.prev_page_url.replace(
-                                      '/',
-                                      '/comic',
+                                ? route(
+                                      'home',
+                                      createParams(pagination.current_page - 1),
                                   )
                                 : '#'
                         }
@@ -38,7 +61,7 @@ const Pagination: FC<PaginationProps> = ({ pagination }) => {
                     {[...Array(pagination.last_page)].map((_, index) => (
                         <Link
                             key={index}
-                            href={`/comic?page=${index + 1}`}
+                            href={route('home', createParams(index + 1))}
                             className={`flex h-10 w-10 items-center justify-center rounded-full ${
                                 pagination.current_page === index + 1
                                     ? 'bg-blue-600 text-white'
@@ -51,7 +74,14 @@ const Pagination: FC<PaginationProps> = ({ pagination }) => {
                     ))}
 
                     <Link
-                        href={pagination.next_page_url || '#'}
+                        href={
+                            pagination.next_page_url
+                                ? route(
+                                      'home',
+                                      createParams(pagination.current_page + 1),
+                                  )
+                                : '#'
+                        }
                         className={`flex h-10 w-10 items-center justify-center rounded-full ${
                             pagination.next_page_url
                                 ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
