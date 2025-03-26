@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng chức năng use case</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            margin: 20px 0;
+        }
+
+        caption {
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .admin {
+            background-color: #e6f7ff;
+        }
+
+        .reader {
+            background-color: #f0f9eb;
+        }
+
+        .both {
+            background-color: #fff1f0;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <caption>2.4. Bảng chức năng use case</caption>
+        <thead>
+            <tr>
+                <th style="width: 5%;">STT</th>
+                <th style="width: 25%;">Tên Use Case</th>
+                <th style="width: 50%;">Mô tả</th>
+                <th style="width: 20%;">Tác nhân</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="both">
+                <td>1</td>
+                <td>Đăng nhập</td>
+                <td>Xác thực người dùng để truy cập vào hệ thống</td>
+                <td>Admin, Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>2</td>
+                <td>Đăng nhập bằng Google</td>
+                <td>Xác thực người dùng thông qua tài khoản Google</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>3</td>
+                <td>Đăng ký</td>
+                <td>Tạo tài khoản mới trên hệ thống</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="admin">
+                <td>4</td>
+                <td>Quản lý tác giả</td>
+                <td>Thêm, sửa, xóa, tìm kiếm thông tin tác giả</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="admin">
+                <td>5</td>
+                <td>Quản lý truyện</td>
+                <td>Thêm, sửa, xóa, tìm kiếm thông tin truyện</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="admin">
+                <td>6</td>
+                <td>Quản lý chương</td>
+                <td>Thêm, sửa, xóa, tìm kiếm thông tin chương truyện</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="admin">
+                <td>7</td>
+                <td>Quản lý độc giả</td>
+                <td>Xem, sửa, xóa, tìm kiếm thông tin độc giả</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="admin">
+                <td>8</td>
+                <td>Thống kê</td>
+                <td>Xem và xuất các báo cáo thống kê</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="admin">
+                <td>9</td>
+                <td>Quản lý điều khoản</td>
+                <td>Thêm, sửa, xóa, tìm kiếm thông tin điều khoản</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="admin">
+                <td>10</td>
+                <td>Quản lý giao dịch</td>
+                <td>Xem, tìm kiếm, sửa thông tin giao dịch</td>
+                <td>Admin</td>
+            </tr>
+            <tr class="reader">
+                <td>11</td>
+                <td>Quản lý thông tin cá nhân</td>
+                <td>Xem và cập nhật thông tin cá nhân</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>12</td>
+                <td>Xem thông báo</td>
+                <td>Xem các thông báo từ hệ thống</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>13</td>
+                <td>Quản lý ví</td>
+                <td>Xem số dư, nạp tiền, xem lịch sử giao dịch</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>14</td>
+                <td>Tìm kiếm truyện</td>
+                <td>Tìm kiếm truyện theo tiêu chí</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>15</td>
+                <td>Đọc truyện</td>
+                <td>Xem nội dung các chương truyện</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>16</td>
+                <td>Bình luận</td>
+                <td>Thêm, sửa, xóa bình luận trên truyện/chương</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>17</td>
+                <td>Đánh giá truyện</td>
+                <td>Đánh giá, xếp hạng cho truyện</td>
+                <td>Độc giả</td>
+            </tr>
+            <tr class="reader">
+                <td>18</td>
+                <td>Mở khóa chương</td>
+                <td>Sử dụng số dư trong ví để mở khóa chương trả phí</td>
+                <td>Độc giả</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>

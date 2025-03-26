@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Thông Tin Quản Lý Cửa Hàng Truyện</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .question {
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .role {
+            font-style: italic;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        .answer {
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Bảng Thông Tin Quản Lý Cửa Hàng Truyện</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Câu hỏi</th>
+                <th>Đối tượng</th>
+                <th>Câu trả lời mong muốn</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="question">Cửa hàng quản lý những loại truyện nào?</td>
+                <td class="role">Nhân viên</td>
+                <td class="answer">Quản lý đa dạng các thể loại truyện: manga, comics, truyện tranh Việt Nam, light
+                    novel, truyện chữ...</td>
+            </tr>
+            <tr>
+                <td class="question">Công việc bán truyện diễn ra như thế nào?</td>
+                <td class="role">Nhân viên</td>
+                <td class="answer">Khá tốt nhưng gặp khó khăn khi đông khách, không theo kịp xu hướng truyện mới, thống
+                    kê thủ công mất thời gian</td>
+            </tr>
+            <tr>
+                <td class="question">Các đầu truyện được quản lý theo những thông tin gì?</td>
+                <td class="role">Nhân viên</td>
+                <td class="answer">Thông tin về tên truyện, tác giả, nhà xuất bản, giá, số lượng tồn kho, hình ảnh bìa,
+                    mô tả nội dung, thể loại...</td>
+            </tr>
+            <tr>
+                <td class="question">Việc kiểm kê các danh mục truyện được thực hiện ra sao?</td>
+                <td class="role">Quản lý</td>
+                <td class="answer">Phải kiểm kê thủ công, mất thời gian, dễ sai sót khi số lượng truyện lớn</td>
+            </tr>
+            <tr>
+                <td class="question">Báo cáo doanh thu bao gồm những nội dung gì?</td>
+                <td class="role">Quản lý</td>
+                <td class="answer">Thông tin về truyện bán chạy, doanh thu theo ngày/tháng, thống kê theo thể loại, độ
+                    tuổi người đọc...</td>
+            </tr>
+            <tr>
+                <td class="question">Nếu xây dựng website, cần những tiêu chí gì?</td>
+                <td class="role">Quản lý</td>
+                <td class="answer">Website dễ sử dụng, quản lý hiệu quả, giao diện hấp dẫn, đa dạng truyện, tìm kiếm
+                    nhanh, thanh toán an toàn, hỗ trợ đọc online và mua bản in</td>
+            </tr>
+            <tr>
+                <td class="question">Quản lý cửa hàng có những nhu cầu đặc biệt gì?</td>
+                <td class="role">Quản lý</td>
+                <td class="answer">Cần hệ thống báo cáo thống kê chi tiết, quản lý kho hiệu quả, cảnh báo hết hàng, theo
+                    dõi xu hướng đọc truyện để nhập hàng phù hợp</td>
+            </tr>
+            <tr>
+                <td class="question">Đối với độc giả, cần những tính năng gì?</td>
+                <td class="role">Quản lý</td>
+                <td class="answer">Tìm kiếm dễ dàng, giao diện thân thiện, nhiều thể loại truyện, thông tin chi tiết về
+                    truyện, đánh giá từ người đọc khác, đọc thử, thanh toán đơn giản</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>

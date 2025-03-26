@@ -95,11 +95,6 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                         <PlusCircle className="h-4 w-4" />
                                         Nạp tiền
                                     </Link>
-
-                                    {/* <button className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-medium text-white shadow-md backdrop-blur-sm transition-all hover:bg-white/20 md:w-auto">
-                                        <CreditCard className="h-4 w-4" />
-                                        Rút tiền
-                                    </button> */}
                                 </div>
                             </div>
 

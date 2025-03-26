@@ -16,16 +16,20 @@
     @viteReactRefresh
     @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
     @inertiaHead
-
+   
+    {{-- <link href="
+    https://cdn.jsdelivr.net/npm/@dearhive/dearflip-jquery-flipbook@1.7.3/dflip/css/dflip.min.css
+    " rel="stylesheet"> --}}
 </head>
 
 <body class="font-sans antialiased">
- 
-    {{-- <div style="display: none" class="_df_book" height="500" webgl="true" backgroundcolor="teal" source="http://127.0.0.1:8000/storage/media/ad84d5dd-1185-4a34-9cdd-a3ef15168772.pdf"
-      id="df_manual_book">
-    </div> --}}
    
     @inertia
 </body>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{{-- <script src="
+    https://cdn.jsdelivr.net/npm/@dearhive/dearflip-jquery-flipbook@1.7.3/dflip/js/dflip.min.js
+    "></script> --}}
 </html>

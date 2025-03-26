@@ -33,7 +33,7 @@ class ChapterController extends Controller
     public function show($id, $chapter_id)
     {
         $chapter = Chapter::where('id', $chapter_id)
-            ->with('media')
+            ->with('media.media')
             ->firstOrFail();
         
         $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
@@ -64,7 +64,7 @@ class ChapterController extends Controller
     public function showIframe($id, $chapter_id)
     {
         $chapter = Chapter::where('id', $chapter_id)
-            ->with('media')
+            ->with('media.media')
             ->firstOrFail();
         
         $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
