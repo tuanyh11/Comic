@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TermsController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
@@ -24,6 +25,13 @@ Route::get('/', [WelcomeController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 require __DIR__ . '/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Terms Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/terms', [TermsController::class, 'termsOfService'])->name('terms');
 
 /*
 |--------------------------------------------------------------------------

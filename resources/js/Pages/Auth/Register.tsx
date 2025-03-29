@@ -16,6 +16,7 @@ const Register = () => {
         email: '',
         password: '',
         password_confirmation: '',
+        terms: false, // Thêm trường terms để lưu trạng thái checkbox
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,6 +131,40 @@ const Register = () => {
                             error={errors.password_confirmation}
                             onChange={handleChange}
                         />
+                    </div>
+
+                    {/* Checkbox đồng ý điều khoản bảo mật */}
+                    <div className="mt-4 flex items-start">
+                        <div className="flex h-5 items-center">
+                            <input
+                                id="terms"
+                                name="terms"
+                                type="checkbox"
+                                checked={formData.terms}
+                                onChange={handleChange}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400"
+                                required
+                            />
+                        </div>
+                        <div className="ml-3 text-sm">
+                            <label htmlFor="terms" className="text-gray-700">
+                                Tôi đồng ý với{' '}
+                                <a
+                                    href="/terms"
+                                    className="font-medium text-blue-500 hover:text-blue-700"
+                                >
+                                    Điều khoản sử dụng
+                                </a>{' '}
+                                và{' '}
+                                {/* <a
+                                    href="/privacy"
+                                    className="font-medium text-blue-500 hover:text-blue-700"
+                                >
+                                    Chính sách bảo mật
+                                </a>{' '} */}
+                                của website
+                            </label>
+                        </div>
                     </div>
 
                     {errors.terms && (

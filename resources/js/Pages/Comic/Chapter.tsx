@@ -80,10 +80,6 @@ const ChapterDetail: FC = () => {
     //     $('#flipbook').dflip({ height: 500, source: 'path/to/your/pdf.pdf' });
     // }, []);
 
-    console.log('====================================');
-    console.log(chapter);
-    console.log('====================================');
-
     return (
         <div ref={containerRef} className="relative flex h-[100dvh] w-full">
             <div

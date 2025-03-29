@@ -70,14 +70,6 @@ class ComicResource extends Resource
                                 ->typeColumn('type') // Optional: Rename the type column if needed
                                 ->typeValue(Comic::class),
 
-                            Forms\Components\Select::make('status')
-                                ->options([
-                                    'ongoing' => 'Ongoing',
-                                    'completed' => 'Completed',
-                                    'hiatus' => 'Hiatus',
-                                    'cancelled' => 'Cancelled',
-                                ])
-                                ->required(),
 
                             Forms\Components\Select::make('author_id')
                                 ->relationship('author', 'name')
@@ -254,7 +246,7 @@ class ComicResource extends Resource
         return [
             'index' => Pages\ListComics::route('/'),
             'create' => Pages\CreateComic::route('/create'),
-            // 'view' => Pages\ViewComic::route('/{record}'),
+            'view' => Pages\ViewComic::route('/{record}'),
             'edit' => Pages\EditComic::route('/{record}/edit'),
         ];
     }

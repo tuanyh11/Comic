@@ -46,11 +46,20 @@ export type Genre = {
     media: Media;
 };
 
+export type ComicStatus = {
+    name: string;
+    id: number;
+    slug: string;
+    description: string;
+    color: string;
+    is_default: boolean;
+};
+
 export type Comic = {
     id: number;
     title: string;
     slug: string;
-    status: 'completed' | 'ongoing' | 'cancelled';
+    status: ComicStatus;
     author: User;
     media: {
         media: Media;

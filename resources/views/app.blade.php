@@ -20,6 +20,11 @@
     {{-- <link href="
     https://cdn.jsdelivr.net/npm/@dearhive/dearflip-jquery-flipbook@1.7.3/dflip/css/dflip.min.css
     " rel="stylesheet"> --}}
+    <link rel="stylesheet" href="{{ asset('js/dflip/css/dflip.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/dflip/css/themify-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css')}}">
+    <script  src="{{ asset('js/dflip/js/libs/jquery.min.js') }}"></script>
+    <script  src="{{ asset('js/dflip/js/dflip.min.js') }}"></script>
 </head>
 
 <body class="font-sans antialiased">

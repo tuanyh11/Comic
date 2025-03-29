@@ -3,7 +3,13 @@ import RecommendedComics from '@/Components/UI/RecommendedComics';
 import DefaultLayout from '@/Layouts/DefaultLayout';
 import { Chapter, Comic } from '@/types/custom';
 import { Link, router } from '@inertiajs/react';
-import { BookOpen, HeartIcon, MessagesSquare, User } from 'lucide-react';
+import {
+    BookOpen,
+    EyeIcon,
+    HeartIcon,
+    MessagesSquare,
+    User,
+} from 'lucide-react';
 import { FC, useState } from 'react';
 
 const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
@@ -42,6 +48,12 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
         }
     };
 
+    // Xử lý đọc thử chapter
+    const handlePreviewChapter = (chapter: Chapter) => {
+        setSelectedChapter(chapter);
+        document.getElementById('my_modal_3')?.showModal();
+    };
+
     // Xử lý mua chapter
     const handlePurchaseConfirm = () => {
         if (selectedChapter) {
@@ -72,6 +84,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
     const tagIds = comic.tags.map((tag) => tag.id);
 
     const defaultChapter = comic.chapters.filter((chapter) => chapter?.media);
+
     return (
         <DefaultLayout>
             <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-blue-50 to-pink-50 py-12 font-sans">
@@ -86,6 +99,29 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                     onConfirm={handlePurchaseConfirm}
                     onCancel={() => setShowPurchaseModal(false)}
                 />
+                <dialog
+                    id="my_modal_3"
+                    className="modal h-screen w-full bg-transparent"
+                >
+                    <div className="modal-box h-full">
+                        <form
+                            className="fixed right-0 top-0 z-20"
+                            method="dialog"
+                        >
+                            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-white">
+                                ✕
+                            </button>
+                        </form>
+                        <div className="h-[100dvh]">
+                            {selectedChapter?.id && (
+                                <iframe
+                                    className="h-full w-full"
+                                    src={`${window.location.href}/chapter/${selectedChapter?.id}/preview`}
+                                ></iframe>
+                            )}
+                        </div>
+                    </div>
+                </dialog>
 
                 {/* Insufficient Funds Modal */}
                 <ConfirmationModal
@@ -106,18 +142,26 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                         {/* Book Cover */}
                         <div className="p-6 md:w-1/3">
                             <div className="book-container py-5">
+                                {/* Badge overlay */}
+
                                 <div className="book relative">
-                                    <img
-                                        src={comic.media[0].media.url}
-                                        alt="Story Cover"
-                                        className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                                    />
-                                    {/* Badge overlay */}
-                                    {comic.status === 'ongoing' && (
-                                        <div className="absolute right-0 top-4 rounded-l-full bg-blue-500 px-3 py-1 text-sm font-medium text-white shadow-md">
-                                            Đang cập nhật
-                                        </div>
-                                    )}
+                                    <div className="absolute inset-0">
+                                        <img
+                                            src={comic.media[0].media.url}
+                                            alt="Story Cover"
+                                            className="h-full w-full object-cover"
+                                        />
+                                        {comic.status && (
+                                            <div
+                                                style={{
+                                                    backgroundColor: `${comic.status.color}`,
+                                                }}
+                                                className="absolute right-0 top-4 z-[999999] rounded-l-full px-3 py-1 text-sm font-medium text-white shadow-md"
+                                            >
+                                                {comic.status.name}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -265,7 +309,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                     <BookOpen className="h-5 w-5 text-blue-500" />
                                     Danh sách chương
                                 </h2>
-                                <div className="space-y-3 overflow-hidden rounded-lg border border-gray-200">
+                                <div className="space-y-3 overflow-hidden rounded-lg">
                                     {comic.chapters.map((chapter) => {
                                         // Kiểm tra xem chapter có phải trả phí không
                                         const isPaid = chapter.pricing > 0;
@@ -288,7 +332,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                                     </div>
                                                 )}
                                                 <div
-                                                    className={`flex cursor-pointer items-center justify-between border-b border-gray-200 p-4 transition-colors hover:bg-blue-50 ${
+                                                    className={`flex cursor-pointer flex-col p-4 transition-colors hover:bg-blue-50 ${
                                                         isPaid && !isUnlocked
                                                             ? 'bg-gray-50'
                                                             : isRead
@@ -301,24 +345,15 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                                         )
                                                     }
                                                 >
-                                                    <div>
-                                                        <div className="flex items-start gap-2">
-                                                            <p className="font-medium text-gray-800">
-                                                                Chương{' '}
-                                                                {chapter.order}:{' '}
-                                                                {chapter.title}
-                                                            </p>
-                                                            {isPaid &&
-                                                                !isUnlocked && (
-                                                                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                                                        {
-                                                                            chapter.pricing
-                                                                        }
-                                                                        đ
-                                                                    </span>
-                                                                )}
-                                                        </div>
-                                                        <p className="text-sm text-gray-500">
+                                                    {/* Phần trên: Tiêu đề chương và thông tin cập nhật */}
+                                                    <div className="w-full">
+                                                        <p className="line-clamp-2 font-medium text-gray-800">
+                                                            Chương{' '}
+                                                            {chapter.order}:{' '}
+                                                            {chapter.title}
+                                                        </p>
+
+                                                        <p className="mt-1 text-sm text-gray-500">
                                                             Cập nhật:{' '}
                                                             {new Date(
                                                                 chapter.updated_at,
@@ -326,8 +361,42 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                                                 'vi-VN',
                                                             )}
                                                         </p>
+
+                                                        {/* Hàng mới cho giá tiền và nút đọc thử */}
+                                                        {isPaid &&
+                                                            !isUnlocked && (
+                                                                <div className="mt-2 flex items-center gap-3">
+                                                                    <span className="flex-shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                                                        {
+                                                                            chapter.pricing
+                                                                        }
+                                                                        đ
+                                                                    </span>
+
+                                                                    {/* Nút Đọc thử */}
+                                                                    {isOngoing && (
+                                                                        <button
+                                                                            onClick={(
+                                                                                e,
+                                                                            ) => {
+                                                                                e.stopPropagation();
+                                                                                handlePreviewChapter(
+                                                                                    chapter,
+                                                                                );
+                                                                            }}
+                                                                            className="flex flex-shrink-0 items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-200"
+                                                                        >
+                                                                            <EyeIcon className="mr-1 h-3 w-3" />
+                                                                            Đọc
+                                                                            thử
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                     </div>
-                                                    <div className="flex items-center gap-4 text-sm text-gray-500">
+
+                                                    {/* Phần dưới: Thống kê lượt đọc và bình luận */}
+                                                    <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
                                                         <span className="flex items-center gap-2">
                                                             <BookOpen className="h-4 w-4 text-blue-500" />
                                                             {chapter.read_count.toLocaleString()}

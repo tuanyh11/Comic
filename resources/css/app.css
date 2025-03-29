@@ -2,13 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-
+@import "tailwindcss";
+@plugin "daisyui";
 html {
     scroll-behavior: smooth;
     scroll-padding-top: var(--scroll-padding-top, 74px);
 }
 
 
+
+::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
 
 .book-container {
     display: flex;

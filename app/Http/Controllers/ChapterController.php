@@ -19,7 +19,7 @@ class ChapterController extends Controller
     protected VoteService $voteService;
 
     public function __construct(
-        PaymentService $paymentService, 
+        PaymentService $paymentService,
         ReadingService $readingService,
         ChapterAccessService $chapterAccessService,
         VoteService $voteService
@@ -35,14 +35,14 @@ class ChapterController extends Controller
         $chapter = Chapter::where('id', $chapter_id)
             ->with('media.media')
             ->firstOrFail();
-        
+
         $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
-        
+
         // Merge access data with chapter
         foreach ($accessData as $key => $value) {
             $chapter->$key = $value;
         }
-        
+
         // Record reading if unlocked and authenticated
         if ($accessData['is_unlocked'] && Auth::check()) {
             $this->readingService->recordReading(Auth::user(), $chapter);
@@ -67,14 +67,14 @@ class ChapterController extends Controller
         $chapter = Chapter::where('id', $chapter_id)
             ->with('media.media')
             ->firstOrFail();
-        
+
         $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
-        
+
         // Merge access data with chapter
         foreach ($accessData as $key => $value) {
             $chapter->$key = $value;
         }
-        
+
         // Increment read count if unlocked
         if ($accessData['is_unlocked']) {
             $chapter->increment('read_count');
@@ -93,10 +93,41 @@ class ChapterController extends Controller
         ]);
     }
 
+    public function preview($id, $chapter_id)
+    {
+        $chapter = Chapter::where('id', $chapter_id)
+            ->with('media.media')
+            ->firstOrFail();
+
+        $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
+
+        // Merge access data with chapter
+        foreach ($accessData as $key => $value) {
+            $chapter->$key = $value;
+        }
+
+        // Increment read count if unlocked
+        if ($accessData['is_unlocked']) {
+            $chapter->increment('read_count');
+        }
+
+        // Redirect to purchase page if content is paid and not unlocked
+        // if ($accessData['is_paid_content'] && !$accessData['is_unlocked']) {
+        //     return Inertia::render('Comic/ChapterLocked', [
+        //         "chapter" => $chapter,
+        //         "walletBalance" => Auth::check() ? $this->paymentService->getWalletBalance(Auth::user()) : 0
+        //     ]);
+        // }
+
+        return view('comic/chapterPreview', [
+            "chapter" => $chapter,
+        ]);
+    }
+
     /**
      * Handle voting for a chapter
      */
-    public function vote( $slug, $chapter_id)
+    public function vote($slug, $chapter_id)
     {
         // Check if user is authenticated
         if (!Auth::check()) {
@@ -107,7 +138,7 @@ class ChapterController extends Controller
 
         $chapter = Chapter::findOrFail($chapter_id);
         $user = Auth::user();
-        
+
         // Check if paid content is accessible
         if (!$this->chapterAccessService->canUserAccessChapter($user, $chapter)) {
             return response()->json([
@@ -117,7 +148,7 @@ class ChapterController extends Controller
 
         // Toggle vote and get result
         $voteResult = $this->voteService->toggleVote($user, $chapter);
-        
+
         return response()->json($voteResult);
     }
 
@@ -163,7 +194,7 @@ class ChapterController extends Controller
         }
 
         // TODO: Add payment processing logic here
-        
+
         // Record purchase
         $chapter->purchasedBy()->create([
             'user_id' => $user->id,

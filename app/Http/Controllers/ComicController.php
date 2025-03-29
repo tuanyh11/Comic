@@ -26,6 +26,7 @@ class ComicController extends Controller
             ->with(['author' => function ($query) {
                 $query->select('id', 'name');
             }])
+            ->with(['status'])
             ->with(['chapters' => function ($query) {
                 $query->withCount('comments');
                 $query->with('media.media');
