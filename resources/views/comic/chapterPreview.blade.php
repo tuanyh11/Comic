@@ -18,9 +18,24 @@
             background: transparent !important;
             height: 100vh !important;
         }
-
+::-webkit-scrollbar {
+  display: none;
+}
         body {
             min-height: 100dvh;
+        }
+
+        .df-container.df-floating>.df-ui-next, .df-container.df-floating>.df-ui-prev  {
+           color: #fff !important;
+    padding: 0 !important;
+    border-radius: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    aspect-ratio: 1 !important;
+    font-size: 1.4rem !important;
+    font-weight: bold !important;
         }
     </style>
 </head>
