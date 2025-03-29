@@ -175,15 +175,10 @@ class ComicResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('status')
+                Tables\Columns\TextColumn::make('status.name')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'ongoing' => 'success',
-                        'completed' => 'info',
-                        'hiatus' => 'warning',
-                        'cancelled' => 'danger',
-                        default => 'gray',
-                    }),
+                    // ->color('blue')
+                   ,
 
                 Tables\Columns\TextColumn::make('chapters_count')
                     ->counts('chapters')
