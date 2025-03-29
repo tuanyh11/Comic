@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Comic extends Model
 {
@@ -12,9 +13,15 @@ class Comic extends Model
         'title',
         'slug',
         'description',
-        'status',
+        'status_id',
         'author_id',
     ];
+
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(Status::class);
+    }
 
     public function author()
     {

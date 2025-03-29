@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AuthorResource\Pages;
+use App\Lang\Traits\HasTranslate;
+use App\Lang\Translate;
 use App\Models\Author;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AuthorResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = Author::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
@@ -22,6 +25,7 @@ class AuthorResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+
     public static function form(Form $form): Form
     {
         return $form
@@ -29,6 +33,7 @@ class AuthorResource extends Resource
                 self::formSchema()
             ]);
     }
+
 
     public static function formSchema() {
         return Forms\Components\Section::make('Author Information')

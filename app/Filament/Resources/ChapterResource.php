@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChapterResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\Chapter;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ChapterResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = Chapter::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -31,7 +33,7 @@ class ChapterResource extends Resource
             ->columns(3);
     }
 
-    public static function formSchema()
+    public static function formSchema(bool $isHiddenComic = false)
     {
         return Forms\Components\Group::make()->schema([
             Forms\Components\Group::make()
@@ -42,6 +44,7 @@ class ChapterResource extends Resource
                                 ->relationship('comic', 'title')
                                 ->required()
                                 ->searchable()
+                                ->hidden($isHiddenComic)
                                 ->preload(),
 
                             Forms\Components\TextInput::make('title')
@@ -60,6 +63,7 @@ class ChapterResource extends Resource
 
                             CuratorPicker::make('document_ids')
                                 ->multiple()
+                                ->required()
                                 ->label('Content')
                                 ->relationship('media', 'id')
                                 ->orderColumn('order') // Optional: Rename the order column if needed

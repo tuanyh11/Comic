@@ -3,10 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ComicResource\Pages;
+use App\Models\Chapter;
 use App\Models\Comic;
+use App\Models\Status;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,107 +30,139 @@ class ComicResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationLabel(): string
+    {
+        return app()->getLocale() === 'vi' ? 'Truyện Tranh' : 'Comics';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make('Comic Information')
-                            ->schema([
-                                Forms\Components\TextInput::make('title')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(fn(Forms\Get $get, Forms\Set $set, ?string $state) =>
-                                    $set('slug', Str::slug($state))),
+                 self::formSchema(),
+            ])->columns(3);
+    }
 
-                                Forms\Components\TextInput::make('slug')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->unique(Comic::class, 'slug', ignoreRecord: true),
+    public static function formSchema()
+    {
+        return Group::make([
+            Forms\Components\Group::make()
+                ->schema([
+                    Forms\Components\Section::make('Comic Information')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn(Forms\Get $get, Forms\Set $set, ?string $state) =>
+                                $set('slug', Str::slug($state))),
 
-                                CuratorPicker::make('document_ids')
-                                    ->multiple()
-                                    ->label('Thumbnail Image')
-                                    ->relationship('media', 'id')
-                                    ->orderColumn('order') // Optional: Rename the order column if needed
-                                    ->typeColumn('type') // Optional: Rename the type column if needed
-                                    ->typeValue(Comic::class),
+                            Forms\Components\TextInput::make('slug')
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(Comic::class, 'slug', ignoreRecord: true),
 
-                                Forms\Components\Select::make('status')
-                                    ->options([
-                                        'ongoing' => 'Ongoing',
-                                        'completed' => 'Completed',
-                                        'hiatus' => 'Hiatus',
-                                        'cancelled' => 'Cancelled',
-                                    ])
-                                    ->required(),
+                            CuratorPicker::make('document_ids')
+                                ->multiple()
+                                ->label('Thumbnail Image')
+                                ->relationship('media', 'id')
+                                ->orderColumn('order') // Optional: Rename the order column if needed
+                                ->typeColumn('type') // Optional: Rename the type column if needed
+                                ->typeValue(Comic::class),
 
-                                Forms\Components\Select::make('author_id')
-                                    ->relationship('author', 'name')
+                            Forms\Components\Select::make('status')
+                                ->options([
+                                    'ongoing' => 'Ongoing',
+                                    'completed' => 'Completed',
+                                    'hiatus' => 'Hiatus',
+                                    'cancelled' => 'Cancelled',
+                                ])
+                                ->required(),
+
+                            Forms\Components\Select::make('author_id')
+                                ->relationship('author', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->createOptionForm([
+                                    AuthorResource::formSchema()
+                                ])
+                                ->required(),
+
+                            Forms\Components\Textarea::make('description')
+                                ->maxLength(65535)
+                                ->columnSpanFull(),
+                        ]),
+                ])
+                ->columnSpan(['lg' => 2]),
+
+            Forms\Components\Group::make()
+                ->schema([
+                    Forms\Components\Section::make('Categories')
+                        ->schema([
+                            Forms\Components\Select::make('genres')
+                                ->relationship('genres', 'name')
+                                ->multiple()
+                                ->preload()
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('name')
+                                        ->required()
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('slug')
+                                        ->required()
+                                        ->maxLength(255)
+                                ])
+                                ->searchable(),
+
+                            Forms\Components\Select::make('tags')
+                                ->relationship('tags', 'name')
+                                ->multiple()
+                                ->preload()
+                                ->searchable()
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('name')
+                                        ->required()
+                                        ->maxLength(255),
+                                ]),
+                                    Forms\Components\Select::make('status_id')
+                                    ->relationship('status', 'name')
+                                    ->preload()
                                     ->searchable()
-                                    ->preload()
-                                    ->createOptionForm([
-                                       AuthorResource::formSchema()
-                                    ])
-                                    ->required(),
-
-                                Forms\Components\Textarea::make('description')
-                                    ->maxLength(65535)
-                                    ->columnSpanFull(),
-                            ]),
-                    ])
-                    ->columnSpan(['lg' => 2]),
-
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make('Categories')
-                            ->schema([
-                                Forms\Components\Select::make('genres')
-                                    ->relationship('genres', 'name')
-                                    ->multiple()
-                                    ->preload()
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('name')
                                             ->required()
-                                            ->maxLength(255),
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn(Forms\Get $get, Forms\Set $set, ?string $state) =>
+                                            $set('slug', Str::slug($state))),
                                         Forms\Components\TextInput::make('slug')
                                             ->required()
                                             ->maxLength(255)
+                                            ->unique(Status::class, 'slug'),
+                                        Forms\Components\ColorPicker::make('color')
+                                            ->required(),
+                                        Forms\Components\Textarea::make('description')
+                                            ->maxLength(65535)
                                     ])
-                                    ->searchable(),
+                                    ->required()
+                        ]),
 
-                                Forms\Components\Select::make('tags')
-                                    ->relationship('tags', 'name')
-                                    ->multiple()
-                                    ->preload()
-                                    ->searchable()
-                                    ->createOptionForm([
-                                        Forms\Components\TextInput::make('name')
-                                            ->required()
-                                            ->maxLength(255),
-                                    ]),
-                            ]),
+                    Forms\Components\Section::make('Stats')
+                        ->schema([
+                            Forms\Components\Placeholder::make('chapters_count')
+                                ->label('Total Chapters')
+                                ->content(fn(?Comic $record): int => $record?->chapters()->count() ?? 0),
 
-                        Forms\Components\Section::make('Stats')
-                            ->schema([
-                                Forms\Components\Placeholder::make('chapters_count')
-                                    ->label('Total Chapters')
-                                    ->content(fn(?Comic $record): int => $record?->chapters()->count() ?? 0),
+                            Forms\Components\Placeholder::make('total_reads')
+                                ->label('Total Reads')
+                                ->content(fn(?Comic $record): int => $record?->chapters()->sum('read_count') ?? 0),
 
-                                Forms\Components\Placeholder::make('total_reads')
-                                    ->label('Total Reads')
-                                    ->content(fn(?Comic $record): int => $record?->chapters()->sum('read_count') ?? 0),
-
-                                Forms\Components\Placeholder::make('total_votes')
-                                    ->label('Total Votes')
-                                    ->content(fn(?Comic $record): int => $record?->chapters()->sum('vote_count') ?? 0),
-                            ]),
-                    ])
-                    ->columnSpan(['lg' => 1]),
-            ])
-            ->columns(3);
+                            Forms\Components\Placeholder::make('total_votes')
+                                ->label('Total Votes')
+                                ->content(fn(?Comic $record): int => $record?->chapters()->sum('vote_count') ?? 0),
+                        ]),
+                ])
+                ->columnSpan(['lg' => 1]),
+        ])->columnSpanFull()->columns(3);
     }
 
 
@@ -226,8 +262,7 @@ class ComicResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-        ->withChapterStats()
-        ->with(['media.media']);
+            ->withChapterStats()
+            ->with(['media.media']);
     }
-
 }

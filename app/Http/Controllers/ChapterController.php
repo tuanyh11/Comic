@@ -56,6 +56,7 @@ class ChapterController extends Controller
             ]);
         }
 
+
         return Inertia::render('Comic/Chapter', [
             "chapter" => $chapter,
         ]);

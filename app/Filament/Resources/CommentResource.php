@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CommentResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\Comment;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CommentResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = Comment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';

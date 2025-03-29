@@ -274,7 +274,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                             chapter.is_unlocked === true;
                                         // Kiểm tra xem chapter đã đọc chưa
                                         const isRead = chapter.is_read === true;
-                                        const isOngoing = chapter?.media;
+                                        const isOngoing = chapter?.media?.[0];
                                         return (
                                             <div
                                                 key={chapter.id}
@@ -302,17 +302,12 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                                     }
                                                 >
                                                     <div>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-start gap-2">
                                                             <p className="font-medium text-gray-800">
                                                                 Chương{' '}
                                                                 {chapter.order}:{' '}
                                                                 {chapter.title}
                                                             </p>
-                                                            {isRead && (
-                                                                <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-                                                                    Đã đọc
-                                                                </span>
-                                                            )}
                                                             {isPaid &&
                                                                 !isUnlocked && (
                                                                     <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">

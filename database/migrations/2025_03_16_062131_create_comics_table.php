@@ -17,7 +17,6 @@ return new class extends Migration
             $table->timestamps();
             $table->string('title')->unique();
             $table->string('slug')->unique();
-            $table->enum('status', ['completed', 'ongoing', 'cancelled'])->default('ongoing');
             $table->text('description')->nullable();
             $table->foreignIdFor(Author::class)->constrained()->cascadeOnDelete();
         });
