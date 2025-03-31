@@ -20,9 +20,15 @@ Route::get('/comic', function () {
         }])
         ->with('thumbnail')
         ->with('chapters')
-        ->withSum('chapters as read_count', 'read_count')
-        ->withSum('chapters as vote_count', 'vote_count');
-    
+        ->with('status')
+        // Use leftJoin and groupBy to ensure correct sum calculation
+        ->leftJoin('chapters', 'comics.id', '=', 'chapters.comic_id')
+        ->select('comics.*')
+        ->groupBy('comics.id')
+        // Ensure these are always treated as numbers, not null
+        ->selectRaw('COALESCE(SUM(chapters.read_count), 0) as read_count')
+        ->selectRaw('COALESCE(SUM(chapters.vote_count), 0) as vote_count');
+
     // Apply genre filter if provided
     if (request()->has('genre')) {
         $genreId = request()->input('genre');
@@ -36,7 +42,8 @@ Route::get('/comic', function () {
     switch ($tab) {
         case 'trending':
             // Sort by read count for trending comics
-            $query->orderBy('read_count', 'desc');
+            $query->orderBy('read_count', 'desc')
+                  ->orderBy('created_at', 'desc'); // fallback sort
             break;
         case 'hot':
             // Sort by recently updated with high read count
@@ -45,7 +52,8 @@ Route::get('/comic', function () {
             break;
         case 'favorite':
             // Sort by vote count for favorite comics
-            $query->orderBy('vote_count', 'desc');
+            $query->orderBy('vote_count', 'desc')
+                  ->orderBy('created_at', 'desc'); // fallback sort
             break;
         default:
             // Default sorting (for-you) - can be personalized later
@@ -53,8 +61,9 @@ Route::get('/comic', function () {
             break;
     }
     
-    $comics = $query->paginate(15);
+    $comics = $query->paginate(5);
     $genres = Genre::all();
+    
     return Inertia::render('Home', [
         'comics' => $comics,
         'genres' => $genres,

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vùng Đất Bí Ẩn</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f0f13;
+            color: #e2e2e2;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .chapter-content {
+            line-height: 1.8;
+        }
+
+        .fog-effect {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="fog"><feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" /><feDisplacementMap in="SourceGraphic" scale="50" /></filter><rect width="100%" height="100%" filter="url(%23fog)" opacity="0.05" /></svg>');
+        }
+
+        .dark-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dark-scroll::-webkit-scrollbar-track {
+            background: #1f1f27;
+        }
+
+        .dark-scroll::-webkit-scrollbar-thumb {
+            background: #3d3d4d;
+            border-radius: 4px;
+        }
+
+        .dark-scroll::-webkit-scrollbar-thumb:hover {
+            background: #4b4b5d;
+        }
+
+        .story-container {
+            max-width: 800px;
+        }
+
+        .transition-fade {
+            transition: all 0.5s ease;
+        }
+
+        .bookmark {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 80%, 50% 100%, 0% 80%);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="fog-effect fixed inset-0 opacity-20 pointer-events-none"></div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-indigo-900 to-purple-900 shadow-lg">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-book-dead text-2xl text-purple-300 mr-4"></i>
+                <h1 class="text-2xl md:text-3xl font-bold italic text-gray-100">Vùng Đất Bí Ẩn</h1>
+            </div>
+            <div class="flex space-x-4">
+                <button
+                    class="bg-purple-800 hover:bg-purple-700 text-gray-200 px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+                    <i class="fas fa-bookmark mr-2"></i>
+                    <span class="hidden md:inline">Đánh dấu</span>
+                </button>
+                <button
+                    class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+                    <i class="fas fa-cog mr-2"></i>
+                    <span class="hidden md:inline">Cài đặt</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 py-8 md:py-12 story-container">
+        <!-- Chapter Navigation -->
+        <div class="flex justify-between items-center mb-8 border-b border-purple-900 pb-4">
+            <button class="text-purple-400 hover:text-purple-300 transition-all flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i>
+                <span>Chương Trước</span>
+            </button>
+            <div class="bg-gray-800 px-4 py-2 rounded-md text-center">
+                <span class="text-sm text-gray-400">Chương 7</span>
+                <h2 class="text-lg md:text-xl text-purple-300">Bí Mật Của Khu Rừng Cổ</h2>
+            </div>
+            <button class="text-purple-400 hover:text-purple-300 transition-all flex items-center">
+                <span>Chương Sau</span>
+                <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <!-- Reading Progress -->
+        <div class="w-full bg-gray-800 rounded-full h-2 mb-8">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-500 h-2 rounded-full" style="width: 35%"></div>
+        </div>
+
+        <!-- Story Content -->
+        <div
+            class="chapter-content text-gray-300 bg-gray-900 bg-opacity-50 p-6 md:p-8 rounded-lg shadow-xl mb-10 relative overflow-hidden">
+            <div class="absolute top-0 right-0 bookmark bg-purple-800 w-10 h-14 opacity-75"></div>
+
+            <p
+                class="mb-6 first-letter:text-4xl first-letter:font-bold first-letter:text-purple-400 first-letter:mr-1 first-letter:float-left">
+                Mưa rơi tầm tã khi Linh đến gần khu rừng cổ. Những giọt nước lạnh buốt chảy dọc theo khuôn mặt cô, hòa
+                lẫn với mồ hôi và nỗi sợ hãi. Chiếc đèn pin trong tay cô chập chờn, ánh sáng yếu ớt chẳng thể xuyên thấu
+                màn đêm dày đặc. Thế nhưng, cô không còn lựa chọn nào khác. Nếu muốn tìm ra sự thật về cái chết của em
+                gái mình, Linh phải bước vào nơi mà không ai dám đặt chân đến sau khi mặt trời lặn.
+            </p>
+
+            <p class="mb-6">
+                "Nơi này có gì đáng sợ chứ?" - Linh tự nhủ, cố trấn an bản thân trong khi tiếng lá cây xào xạc và tiếng
+                gió rít qua kẽ lá tạo nên bản nhạc rùng rợn. Cô siết chặt mảnh giấy trong túi áo khoác - mảnh giấy cuối
+                cùng mà em gái cô, Mai, đã viết trước khi biến mất: <span class="italic text-purple-300">"Tất cả đều ở
+                    trong rừng. Đừng tin bất kỳ ai. Đặc biệt là khi họ mỉm cười."</span>
+            </p>
+
+            <p class="mb-6">
+                Linh dừng lại trước tấm biển cũ kỹ gắn trên thân cây: "CẤM VÀO - NGUY HIỂM." Biển báo đã bạc màu theo
+                thời gian, nhưng thông điệp vẫn rõ ràng. Dân làng luôn răn đe con cháu họ tránh xa khu rừng này, đặc
+                biệt là vào ban đêm. Họ kể về những linh hồn lạc lối, về âm thanh kỳ lạ, và về những người đi vào mà
+                không bao giờ trở ra. Nhưng đối với Linh, những câu chuyện đó chỉ là mê tín dị đoan - cho đến khi em gái
+                cô biến mất.
+            </p>
+
+            <p class="mb-6">
+                Một tiếng động lạ vang lên từ sâu trong rừng làm Linh giật mình. Không phải tiếng động của động vật hay
+                tiếng gió. Mà là... tiếng cười? Linh rùng mình, nhớ lại lời cảnh báo của em gái: <span
+                    class="italic text-purple-300">"Đừng tin bất kỳ ai. Đặc biệt là khi họ mỉm cười."</span>
+            </p>
+
+            <p class="mb-6">
+                "Mai... chị đang đến đây," Linh thì thầm và bước qua ranh giới vào khu rừng. Ngay lập tức, không khí
+                dường như thay đổi. Mùi ẩm mốc của đất và lá mục xen lẫn với một mùi hương lạ - ngọt ngào nhưng có gì đó
+                không đúng. Cô bật chiếc đèn pin mạnh hơn và hướng về phía trước. Con đường mòn hiện ra, nhưng nó không
+                giống như Linh nhớ từ những lần đến đây vào ban ngày. Nó rộng hơn, rõ ràng hơn, như thể được sử dụng
+                thường xuyên.
+            </p>
+
+            <p class="mb-6">
+                Linh đi được khoảng mười phút thì phát hiện ra điều gì đó ánh lên dưới ánh đèn pin. Cô cúi xuống và nhặt
+                lên - một sợi dây chuyền bạc với mặt hình nửa trái tim. Trái tim của Mai. Linh đã tặng nó cho em gái vào
+                sinh nhật thứ 18, và Mai chưa bao giờ tháo nó ra. Đây là bằng chứng đầu tiên xác nhận rằng Mai đã ở đây.
+            </p>
+
+            <p class="mb-6">
+                Bỗng nhiên, đèn pin của Linh chớp nháy rồi tắt ngúm. Bóng tối bao trùm, dày đặc đến mức Linh cảm thấy
+                như nó có thể chạm vào được. Cô vỗ chiếc đèn, lắc nó, nhưng vô ích. Trong khoảnh khắc tuyệt vọng đó, cô
+                nghe thấy tiếng bước chân. Không phải một người, mà là nhiều người, đang đến gần từ mọi hướng.
+            </p>
+
+            <p class="mb-6">
+                "Ai đó?" Linh gọi, giọng run rẩy. "Có ai không?"
+            </p>
+
+            <p class="mb-6">
+                Không có tiếng trả lời, chỉ có tiếng bước chân tiếp tục đến gần. Rồi, từ bóng tối, một giọng nói vang
+                lên - một giọng nói quen thuộc đến rợn người.
+            </p>
+
+            <p class="mb-6">
+                "Chị Linh... em đã đợi chị."
+            </p>
+
+            <p class="mb-8">
+                Linh quay phắt lại. Đứng trước mặt cô, dưới ánh trăng mờ ảo xuyên qua tán cây, là Mai - em gái cô, người
+                đã mất tích ba tháng trước. Nhưng có điều gì đó không đúng. Khuôn mặt Mai nhợt nhạt, đôi mắt vô hồn, và
+                trên môi là một nụ cười kỳ lạ - một nụ cười không bao giờ chạm đến đôi mắt...
+            </p>
+
+            <div class="text-center text-gray-400 italic mb-4">~Còn tiếp~</div>
+        </div>
+
+        <!-- Chapter Actions -->
+        <div class="flex justify-center space-x-8 mb-12">
+            <button
+                class="bg-purple-900 hover:bg-purple-800 text-gray-200 px-6 py-3 rounded-md shadow-lg transition-all duration-300 flex items-center">
+                <i class="fas fa-thumbs-up mr-2"></i>
+                <span>Yêu Thích</span>
+            </button>
+            <button
+                class="bg-indigo-900 hover:bg-indigo-800 text-gray-200 px-6 py-3 rounded-md shadow-lg transition-all duration-300 flex items-center">
+                <i class="fas fa-comment mr-2"></i>
+                <span>Bình Luận</span>
+            </button>
+            <button
+                class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-6 py-3 rounded-md shadow-lg transition-all duration-300 flex items-center">
+                <i class="fas fa-share mr-2"></i>
+                <span>Chia Sẻ</span>
+            </button>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="bg-gray-900 bg-opacity-60 rounded-lg shadow-xl p-6 mb-10">
+            <h3 class="text-xl font-bold text-purple-300 mb-6 flex items-center">
+                <i class="fas fa-comments mr-3"></i>
+                Bình Luận (24)
+            </h3>
+
+            <!-- Comment Input -->
+            <div class="flex items-start mb-8">
+                <div class="w-10 h-10 rounded-full bg-purple-800 flex items-center justify-center mr-4">
+                    <i class="fas fa-user text-gray-300"></i>
+                </div>
+                <div class="flex-1">
+                    <textarea
+                        class="w-full bg-gray-800 text-gray-300 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-purple-500 transition-all dark-scroll"
+                        rows="3" placeholder="Để lại bình luận của bạn..."></textarea>
+                    <div class="flex justify-end mt-2">
+                        <button
+                            class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-all">Gửi</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Comments -->
+            <div class="space-y-6">
+                <!-- Comment 1 -->
+                <div class="flex">
+                    <div
+                        class="w-10 h-10 rounded-full bg-indigo-800 flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="text-white font-bold">T</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-gray-800 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-bold text-purple-300">ThúyAnh92</h4>
+                                <span class="text-xs text-gray-500">2 giờ trước</span>
+                            </div>
+                            <p class="text-gray-300">Không ngờ truyện lại hay đến vậy! Tôi đã đoán được rằng Mai không
+                                thực sự chết, nhưng không ngờ cô ấy lại quay trở lại theo cách này. Nụ cười đó chắc chắn
+                                là một manh mối quan trọng.</p>
+                            <div class="flex items-center mt-3 text-sm">
+                                <button
+                                    class="text-gray-400 hover:text-purple-400 transition-all flex items-center mr-4">
+                                    <i class="fas fa-thumbs-up mr-1"></i>
+                                    <span>42</span>
+                                </button>
+                                <button class="text-gray-400 hover:text-purple-400 transition-all flex items-center">
+                                    <i class="fas fa-reply mr-1"></i>
+                                    <span>Trả lời</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comment 2 -->
+                <div class="flex">
+                    <div
+                        class="w-10 h-10 rounded-full bg-purple-900 flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="text-white font-bold">H</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-gray-800 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-bold text-purple-300">HùngTrần_87</h4>
+                                <span class="text-xs text-gray-500">5 giờ trước</span>
+                            </div>
+                            <p class="text-gray-300">Mình cảm thấy bầu không khí của truyện rất cuốn hút. Tác giả đã xây
+                                dựng rất tốt cảm giác bí ẩn và ghê rợn của khu rừng. Mình tự hỏi liệu Mai có thực sự là
+                                Mai không, hay đó là thứ gì đó đang giả dạng?</p>
+                            <div class="flex items-center mt-3 text-sm">
+                                <button
+                                    class="text-gray-400 hover:text-purple-400 transition-all flex items-center mr-4">
+                                    <i class="fas fa-thumbs-up mr-1"></i>
+                                    <span>28</span>
+                                </button>
+                                <button class="text-gray-400 hover:text-purple-400 transition-all flex items-center">
+                                    <i class="fas fa-reply mr-1"></i>
+                                    <span>Trả lời</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="w-full text-center mt-6 text-purple-400 hover:text-purple-300 transition-all">
+                Xem thêm bình luận
+            </button>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="mb-10">
+            <h3 class="text-xl font-bold text-purple-300 mb-6 flex items-center">
+                <i class="fas fa-book mr-3"></i>
+                Có thể bạn cũng thích
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Recommendation 1 -->
+                <div
+                    class="bg-gray-900 bg-opacity-60 rounded-lg overflow-hidden shadow-lg transition-fade hover:shadow-purple-900/30 hover:translate-y-[-5px]">
+                    <div class="h-40 bg-purple-900 relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
+                        <div class="absolute bottom-0 left-0 p-4">
+                            <h4 class="text-lg font-bold text-purple-200">Lời Nguyền Cổ Xưa</h4>
+                            <p class="text-sm text-gray-300">Phần 1 - Chương 12</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-gray-400 text-sm">Khi những bí mật từ quá khứ bị chôn vùi bắt đầu trỗi dậy, không
+                            ai trong làng còn có thể an toàn...</p>
+                    </div>
+                </div>
+
+                <!-- Recommendation 2 -->
+                <div
+                    class="bg-gray-900 bg-opacity-60 rounded-lg overflow-hidden shadow-lg transition-fade hover:shadow-purple-900/30 hover:translate-y-[-5px]">
+                    <div class="h-40 bg-indigo-900 relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
+                        <div class="absolute bottom-0 left-0 p-4">
+                            <h4 class="text-lg font-bold text-purple-200">Bóng Ma Trên Đồi</h4>
+                            <p class="text-sm text-gray-300">Phần 2 - Chương 4</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-gray-400 text-sm">Ngôi nhà trên đồi đã bỏ hoang 20 năm, nhưng mỗi đêm vẫn có ánh
+                            đèn và tiếng cười vọng ra...</p>
+                    </div>
+                </div>
+
+                <!-- Recommendation 3 -->
+                <div
+                    class="bg-gray-900 bg-opacity-60 rounded-lg overflow-hidden shadow-lg transition-fade hover:shadow-purple-900/30 hover:translate-y-[-5px]">
+                    <div class="h-40 bg-gray-800 relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
+                        <div class="absolute bottom-0 left-0 p-4">
+                            <h4 class="text-lg font-bold text-purple-200">Ngày Không Trở Lại</h4>
+                            <p class="text-sm text-gray-300">Phần 3 - Chương 7</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-gray-400 text-sm">Một ngày, cả thị trấn thức dậy và phát hiện rằng họ đang sống
+                            lại cùng một ngày lặp đi lặp lại...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 border-t border-purple-900 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-xl font-bold text-purple-300 flex items-center">
+                        <i class="fas fa-book-dead mr-2"></i>
+                        Vùng Đất Bí Ẩn
+                    </h2>
+                    <p class="text-gray-400 text-sm mt-1">Truyện ma, kinh dị và bí ẩn</p>
+                </div>
+
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-purple-300 transition-all">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-purple-300 transition-all">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-purple-300 transition-all">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-purple-300 transition-all">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
+                &copy; 2025 Vùng Đất Bí Ẩn. Mọi quyền được bảo lưu.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Reading Mode Toggle (Fixed) -->
+    <div class="fixed right-6 bottom-6 space-y-4">
+        <button
+            class="w-12 h-12 rounded-full bg-purple-800 hover:bg-purple-700 flex items-center justify-center shadow-lg transition-all duration-300">
+            <i class="fas fa-moon text-gray-200"></i>
+        </button>
+        <button
+            class="w-12 h-12 rounded-full bg-purple-800 hover:bg-purple-700 flex items-center justify-center shadow-lg transition-all duration-300">
+            <i class="fas fa-font text-gray-200"></i>
+        </button>
+        <button
+            class="w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center shadow-lg transition-all duration-300">
+            <i class="fas fa-arrow-up text-gray-200"></i>
+        </button>
+    </div>
+
+    <!-- Modal Popup (Hidden) -->
+    <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 rounded-lg max-w-md w-full p-6 relative">
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold text-purple-300 mb-4">Thông báo mới</h3>
+            <p class="text-gray-300 mb-6">Chương mới "Bí Mật Của Hang Động" đã được cập nhật. Bạn có muốn đọc ngay bây
+                giờ không?</p>
+            <div class="flex justify-end space-x-4">
+                <button class="px-4 py-2 bg-gray-800 text-gray-300 rounded-md hover:bg-gray-700">Để sau</button>
+                <button class="px-4 py-2 bg-purple-700 text-white rounded-md hover:bg-purple-600">Đọc ngay</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

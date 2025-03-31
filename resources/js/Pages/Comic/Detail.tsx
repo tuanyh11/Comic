@@ -4,7 +4,7 @@ import { Chapter, Comic } from '@/types/custom';
 import { router } from '@inertiajs/react';
 import { FC, useState } from 'react';
 
-// Import the newly created components
+// Import the components
 import AuthorInfo from './Partials/AuthorInfo';
 import ChapterPreviewModal from './Partials/ChapterPreviewModal';
 import ChaptersList from './Partials/ChaptersList';
@@ -91,7 +91,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
 
     return (
         <DefaultLayout>
-            <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-blue-50 to-pink-50 py-12 font-sans">
+            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-12 font-sans">
                 {/* Modals */}
                 <PurchaseConfirmationModal
                     showPurchaseModal={showPurchaseModal}
@@ -111,17 +111,20 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                 {/* Main Content */}
                 <main className="mx-auto max-w-6xl p-4">
                     {/* Story Header */}
-                    <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-lg md:flex-row">
+                    <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-xl md:flex-row">
                         {/* Book Cover */}
                         <ComicCover
                             comic={comic}
                             isBookmarked={isBookmarked}
                             toggleBookmark={toggleBookmark}
                             voteCount={voteCount}
+                            readCount={readCount}
+                            chaptersCount={comic.chapters.length}
+                            commentCount={commentCount}
                         />
 
                         {/* Story Details */}
-                        <div className="p-6 md:w-2/3">
+                        <div className="p-8 md:w-2/3">
                             {/* Comic Title */}
                             <ComicHeader title={comic.title} />
 
@@ -131,15 +134,6 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                                 isFollowing={isFollowing}
                                 toggleFollow={toggleFollow}
                             />
-
-                            {/* Story Stats */}
-                            <ComicStats
-                                readCount={readCount}
-                                chaptersCount={comic.chapters.length}
-                                commentCount={commentCount}
-                                voteCount={voteCount}
-                            />
-
                             {/* Tags */}
                             <ComicTags tags={comic.tags} />
 
@@ -147,7 +141,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                             <ComicDescription description={comic.description} />
 
                             {/* Wallet Balance */}
-                            <WalletBalance balance={walletBalance} />
+                            {/* <WalletBalance balance={walletBalance} /> */}
 
                             {/* Table of Contents */}
                             <ChaptersList
@@ -159,9 +153,9 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                     </div>
 
                     {/* Recommended Stories */}
-                    <div className="mb-12 mt-10">
-                        <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-gray-800">
-                            <span className="mr-2 inline-block h-1 w-6 rounded-full bg-gradient-to-r from-blue-500 to-pink-500"></span>
+                    <div className="mb-12 mt-12">
+                        <h2 className="mb-8 flex items-center gap-3 text-2xl font-bold text-gray-800">
+                            <span className="inline-block h-1.5 w-8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"></span>
                             Có thể bạn cũng thích
                         </h2>
                         <RecommendedComics

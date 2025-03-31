@@ -35,62 +35,126 @@ const Pagination: FC<PaginationProps> = ({ pagination }) => {
         return params;
     };
 
-    return (
-        <div className="mt-12 flex items-center justify-center">
-            {pagination.last_page > 1 && (
-                <div className="flex items-center space-x-2">
-                    <Link
-                        href={
-                            pagination.prev_page_url
-                                ? route(
-                                      'home',
-                                      createParams(pagination.current_page - 1),
-                                  )
-                                : '#'
-                        }
-                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                            pagination.prev_page_url
-                                ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
-                                : 'cursor-not-allowed bg-gray-100 text-gray-400'
-                        }`}
-                        preserveScroll
-                    >
-                        <ChevronLeft className="h-5 w-5" />
-                    </Link>
+    // Generate pagination items with consideration for large page counts
+    const generatePaginationItems = () => {
+        const items = [];
+        const currentPage = pagination.current_page;
+        const lastPage = pagination.last_page;
 
-                    {[...Array(pagination.last_page)].map((_, index) => (
+        // Always show first page
+        items.push(1);
+
+        // For small number of pages, show all
+        if (lastPage <= 7) {
+            for (let i = 2; i <= lastPage; i++) {
+                items.push(i);
+            }
+            return items;
+        }
+
+        // For large number of pages, show dots
+        if (currentPage > 3) {
+            items.push('...');
+        }
+
+        // Show pages around current page
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(lastPage - 1, currentPage + 1);
+
+        for (let i = start; i <= end; i++) {
+            items.push(i);
+        }
+
+        if (currentPage < lastPage - 2) {
+            items.push('...');
+        }
+
+        // Always show last page if not already included
+        if (lastPage > 1) {
+            items.push(lastPage);
+        }
+
+        return items;
+    };
+
+    const paginationItems = generatePaginationItems();
+
+    return (
+        <div className="mt-16 flex items-center justify-center">
+            {pagination.last_page > 1 && (
+                <div className="rounded-xl bg-white p-2 shadow-lg">
+                    <div className="flex items-center">
                         <Link
-                            key={index}
-                            href={route('home', createParams(index + 1))}
-                            className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                                pagination.current_page === index + 1
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-blue-600 shadow hover:bg-blue-50'
+                            href={
+                                pagination.prev_page_url
+                                    ? route(
+                                          'home',
+                                          createParams(
+                                              pagination.current_page - 1,
+                                          ),
+                                      )
+                                    : '#'
+                            }
+                            className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                                pagination.prev_page_url
+                                    ? 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
+                                    : 'cursor-not-allowed text-gray-300'
                             }`}
                             preserveScroll
                         >
-                            {index + 1}
+                            <ChevronLeft className="h-5 w-5" />
                         </Link>
-                    ))}
 
-                    <Link
-                        href={
-                            pagination.next_page_url
-                                ? route(
-                                      'home',
-                                      createParams(pagination.current_page + 1),
-                                  )
-                                : '#'
-                        }
-                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                            pagination.next_page_url
-                                ? 'bg-white text-blue-600 shadow hover:bg-blue-50'
-                                : 'cursor-not-allowed bg-gray-100 text-gray-400'
-                        }`}
-                        preserveScroll
-                    >
-                        <ChevronRight className="h-5 w-5" />
-                    </Link>
+                        <div className="flex items-center space-x-1">
+                            {paginationItems.map((item, index) =>
+                                item === '...' ? (
+                                    <span
+                                        key={`ellipsis-${index}`}
+                                        className="flex h-12 w-12 items-center justify-center text-gray-500"
+                                    >
+                                        ...
+                                    </span>
+                                ) : (
+                                    <Link
+                                        key={`page-${item}`}
+                                        href={route(
+                                            'home',
+                                            createParams(item as number),
+                                        )}
+                                        className={`flex h-12 w-12 items-center justify-center rounded-xl font-medium transition-all duration-300 ${
+                                            pagination.current_page === item
+                                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                                                : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
+                                        }`}
+                                        preserveScroll
+                                    >
+                                        {item}
+                                    </Link>
+                                ),
+                            )}
+                        </div>
+
+                        <Link
+                            href={
+                                pagination.next_page_url
+                                    ? route(
+                                          'home',
+                                          createParams(
+                                              pagination.current_page + 1,
+                                          ),
+                                      )
+                                    : '#'
+                            }
+                            className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                                pagination.next_page_url
+                                    ? 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
+                                    : 'cursor-not-allowed text-gray-300'
+                            }`}
+                            preserveScroll
+                        >
+                            <ChevronRight className="h-5 w-5" />
+                        </Link>
+                    </div>
                 </div>
             )}
         </div>

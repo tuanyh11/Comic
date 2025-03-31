@@ -43,7 +43,6 @@ class ComicController extends Controller
                 ->withCount(['chapters as read_count' => function ($query) {
                     $query->select(DB::raw('SUM(read_count)'));
                 }])
-                ->where('status', 'published')
                 ->limit(10)
                 ->get();
         });
@@ -94,6 +93,8 @@ class ComicController extends Controller
                 ->with(['author' => function ($query) {
                     $query->select('id', 'name');
                 }])
+                ->with('status')
+                ->with('chapters')
                 ->with('thumbnail')
                 ->withCount(['chapters as read_count' => function ($query) {
                     $query->select(DB::raw('COALESCE(SUM(read_count), 0)'));
@@ -110,11 +111,6 @@ class ComicController extends Controller
                 }, '>=', 1);
             }
             
-            // Log query SQL để debug
-            $sql = $query->toSql();
-            $bindings = $query->getBindings();
-            Log::info("SQL Query: " . $sql);
-            Log::info("SQL Bindings: " . json_encode($bindings));
             
             // Sắp xếp theo truyện mới nhất và có nhiều lượt đọc nhất
             $recommendations = $query->orderByDesc('created_at')
@@ -129,7 +125,6 @@ class ComicController extends Controller
                 $existingIds = $recommendations->pluck('id')->push($comicId)->toArray();
                 $additionalComics = Comic::where('id', '!=', $comicId)
                     ->whereNotIn('id', $existingIds)
-                    ->where('status', 'published')
                     ->with(['author' => function ($query) {
                         $query->select('id', 'name');
                     }])
@@ -144,7 +139,6 @@ class ComicController extends Controller
                     ->limit($limit - $recommendations->count())
                     ->get();
 
-                Log::info("Additional comics count: " . $additionalComics->count());
                 
                 // Gộp kết quả
                 $recommendations = $recommendations->concat($additionalComics);

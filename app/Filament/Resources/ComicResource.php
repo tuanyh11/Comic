@@ -65,6 +65,7 @@ class ComicResource extends Resource
                             CuratorPicker::make('document_ids')
                                 ->multiple()
                                 ->label('Thumbnail Image')
+                                ->required()
                                 ->relationship('media', 'id')
                                 ->orderColumn('order') // Optional: Rename the order column if needed
                                 ->typeColumn('type') // Optional: Rename the type column if needed
@@ -177,7 +178,6 @@ class ComicResource extends Resource
 
                 Tables\Columns\TextColumn::make('status.name')
                     ->badge()
-                    // ->color('blue')
                    ,
 
                 Tables\Columns\TextColumn::make('chapters_count')
@@ -241,7 +241,7 @@ class ComicResource extends Resource
         return [
             'index' => Pages\ListComics::route('/'),
             'create' => Pages\CreateComic::route('/create'),
-            'view' => Pages\ViewComic::route('/{record}'),
+            // 'view' => Pages\ViewComic::route('/{record}'),
             'edit' => Pages\EditComic::route('/{record}/edit'),
         ];
     }

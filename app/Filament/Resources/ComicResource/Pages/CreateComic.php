@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreateComic extends CreateRecord
 {
-    use HasWizard;
+    // use HasWizard;
     protected static string $resource = ComicResource::class;
     
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
-    }
+    // protected function getRedirectUrl(): string
+    // {
+    //     return $this->getResource()::getUrl('index');
+    // }
 
     // protected function getSteps(): array
     // {

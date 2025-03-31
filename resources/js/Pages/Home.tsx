@@ -28,14 +28,14 @@ const Home: FC<{
     const { activeTab } = usePage<HomePageProps>().props;
     const comicData = comics?.data;
     const gridRef = useRef<HTMLDivElement>(null);
-
+    
     return (
         <DefaultLayout>
             <Head>
                 <title>Home</title>
             </Head>
             <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-blue-50 to-pink-50">
-                <HeroSection />
+                {/* <HeroSection /> */}
 
                 <div
                     ref={gridRef}
