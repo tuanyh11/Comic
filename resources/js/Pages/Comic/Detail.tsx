@@ -11,11 +11,10 @@ import ChaptersList from './Partials/ChaptersList';
 import ComicCover from './Partials/ComicCover';
 import ComicDescription from './Partials/ComicDescription';
 import ComicHeader from './Partials/ComicHeader';
-import ComicStats from './Partials/ComicStats';
 import ComicTags from './Partials/ComicTags';
 import InsufficientFundsModal from './Partials/InsufficientFundsModal';
 import PurchaseConfirmationModal from './Partials/PurchaseConfirmationModal';
-import WalletBalance from './Partials/WalletBalance';
+import Breadcrumbs from './Partials/Breadcrumbs';
 
 const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
     comic,
@@ -38,7 +37,9 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
     const handleChapterClick = async (chapter: Chapter) => {
         // Nếu chapter miễn phí hoặc đã mở khóa, điều hướng trực tiếp đến chapter
         if (!chapter.pricing || chapter.is_unlocked) {
-            router.visit(`/comic/${comic.slug}/chapter/${chapter.id}`);
+            // router.visit(`/comic/${comic.slug}/chapter/${chapter.id}`);
+            const url = `/comic/${comic.slug}/chapter/${chapter.id}`;
+            window.open(url, '_blank');
             return;
         }
 
@@ -111,6 +112,7 @@ const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
                 {/* Main Content */}
                 <main className="mx-auto max-w-6xl p-4">
                     {/* Story Header */}
+                    <Breadcrumbs comic={comic} />
                     <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-xl md:flex-row">
                         {/* Book Cover */}
                         <ComicCover

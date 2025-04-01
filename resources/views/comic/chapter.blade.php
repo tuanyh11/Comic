@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css')}}">
     <style>
         ._df_book {
-            background: linear-gradient(to right, #3b82f6, #ec4899);
+            background: transparent !important;
             height: 100vh !important;
         }
         body {
@@ -33,19 +33,4 @@
 </body>
 <script defer src="{{ asset('js/dflip/js/libs/jquery.min.js') }}"></script>
 <script defer src="{{ asset('js/dflip/js/dflip.min.js') }}"></script>
-{{-- <script>
-    $(function() {
-        $('#df_manual_book').flipBook({
-            webgl: true,
-            backgroundcolor: '#3b82f6',
-            autoplay: true,
-            autoplayDelay: 2000,
-            autoplayLoop: true,
-            autoplayStopOnUserInput: false,
-            autoplayStopOnUserInputDelay: 1000,
-            autoplayStopOnUserInputDelay: 1000,
-            autoplayStopOnUserInputDelay: 1000,
-        });
-    })
-</script> --}}
 </html>

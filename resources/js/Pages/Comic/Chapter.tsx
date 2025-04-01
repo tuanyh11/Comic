@@ -75,15 +75,13 @@ const ChapterDetail: FC = () => {
         });
     };
 
-    // useEffect(() => {
-    //     window.jQuery = $; // Ensure jQuery is available
-    //     $('#flipbook').dflip({ height: 500, source: 'path/to/your/pdf.pdf' });
-    // }, []);
-
     return (
         <div ref={containerRef} className="relative flex h-[100dvh] w-full">
             <div
-                className={`transition-all ${showComments ? 'w-full' : 'w-full'}`}
+                style={{
+                    backgroundImage: `url(/storage/client/detail.jpg)`,
+                }}
+                className={`transition-all ${showComments ? 'w-full' : 'w-full'} relative bg-cover after:absolute after:inset-0 after:bg-black/50 after:from-black/50 after:to-black/90`}
             >
                 {!showComments && (
                     <FloatingButtons
@@ -96,7 +94,7 @@ const ChapterDetail: FC = () => {
                 {/* Replace PDFViewer with PDFFlipbook */}
                 {/* <PDFFlipbook fileUrl={chapter.media.url} /> */}
                 <iframe
-                    className="h-full w-full"
+                    className="relative z-10 h-full w-full"
                     src={`${window.location.href}/iframe`}
                 ></iframe>
             </div>
