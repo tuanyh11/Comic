@@ -91,6 +91,7 @@ export type Chapter = {
     is_unlocked?: boolean;
     pricing: number;
     is_read: boolean;
+    comic?: Comic;
 };
 
 export type Comment = {

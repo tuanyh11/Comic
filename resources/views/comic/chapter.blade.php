@@ -18,6 +18,7 @@
             background: transparent !important;
             height: 100vh !important;
         }
+
         body {
             min-height: 100dvh;
         }
@@ -26,11 +27,28 @@
 
 <body class="font-sans antialiased">
 
-    <div altnext="ti-angle-right" altprev="'ti-angle-left"  class="_df_book"  webgl="true" backgroundcolor="teal"
+    <div altnext="ti-angle-right" altprev="'ti-angle-left" class="_df_book" webgl="true" backgroundcolor="teal"
         source={{$chapter->media[0]->media->url}} id="df_manual_book">
     </div>
+    <input type="hidden" id="currentPage">
 
 </body>
-<script defer src="{{ asset('js/dflip/js/libs/jquery.min.js') }}"></script>
-<script defer src="{{ asset('js/dflip/js/dflip.min.js') }}"></script>
+<script src="{{ asset('js/dflip/js/libs/jquery.min.js') }}"></script>
+<script src="{{ asset('js/dflip/js/dflip.min.js') }}"></script>
+<script>
+    window.DFLIP.defaults.onFlip = (app) => {
+        $('#currentPage').val(app.target.oldBaseNumber * app.target.pageMode);
+    };
+
+    DFLIP.defaults.onReady = function (app) {
+        const bookmarkers = JSON.parse(localStorage.getItem('bookmarkedChapters'))
+        const currentBookmarker = bookmarkers.find((bookmarker) => bookmarker.id === {{$chapter->id}})
+        if (currentBookmarker) {
+            console.log(currentBookmarker);
+
+            app.target.startPage = Number(currentBookmarker.page);
+        }
+    }
+</script>
+
 </html>

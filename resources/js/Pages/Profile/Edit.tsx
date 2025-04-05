@@ -4,16 +4,16 @@ import {
     AlertCircle,
     Camera,
     CheckCircle,
+    ChevronRight,
     Eye,
     EyeOff,
     Home,
     Lock,
     Mail,
     Save,
+    Shield,
     User,
     X,
-    Shield,
-    ChevronRight,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -112,7 +112,9 @@ const ProfileForm = () => {
                     : 'bg-white text-gray-600 hover:bg-gray-50'
             }`}
         >
-            <Icon className={`h-4 w-4 ${tab === id ? 'text-white' : 'text-gray-500'}`} />
+            <Icon
+                className={`h-4 w-4 ${tab === id ? 'text-white' : 'text-gray-500'}`}
+            />
             {label}
         </button>
     );
@@ -157,7 +159,7 @@ const ProfileForm = () => {
             </div>
 
             <div className="mx-auto w-full max-w-4xl">
-                <h2 className="text-center text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                <h2 className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-center text-4xl font-extrabold text-transparent">
                     Hồ Sơ Người Dùng
                 </h2>
                 <p className="mt-3 text-center text-lg text-gray-600">
@@ -284,7 +286,7 @@ const ProfileForm = () => {
                                         <User className="h-5 w-5 text-indigo-600" />
                                         Thông tin cá nhân
                                     </h3>
-                                    
+
                                     {/* Name */}
                                     <div>
                                         <label
@@ -351,7 +353,7 @@ const ProfileForm = () => {
                                         <Shield className="h-5 w-5 text-indigo-600" />
                                         Cập nhật mật khẩu
                                     </h3>
-                                    
+
                                     {/* Password with strength meter */}
                                     <div>
                                         <label
@@ -412,16 +414,23 @@ const ProfileForm = () => {
                                                         </div>
                                                     </div>
                                                     <p className="ml-3 text-sm font-medium">
-                                                        <span className="text-gray-600">Độ mạnh:</span>{' '}
-                                                        <span className={
-                                                            passwordStrength() <= 25
-                                                                ? 'text-red-600'
-                                                                : passwordStrength() <= 50
-                                                                ? 'text-orange-600'
-                                                                : passwordStrength() <= 75
-                                                                ? 'text-yellow-600'
-                                                                : 'text-green-600'
-                                                        }>
+                                                        <span className="text-gray-600">
+                                                            Độ mạnh:
+                                                        </span>{' '}
+                                                        <span
+                                                            className={
+                                                                passwordStrength() <=
+                                                                25
+                                                                    ? 'text-red-600'
+                                                                    : passwordStrength() <=
+                                                                        50
+                                                                      ? 'text-orange-600'
+                                                                      : passwordStrength() <=
+                                                                          75
+                                                                        ? 'text-yellow-600'
+                                                                        : 'text-green-600'
+                                                            }
+                                                        >
                                                             {getPasswordStrengthText()}
                                                         </span>
                                                     </p>
@@ -436,15 +445,28 @@ const ProfileForm = () => {
                                                             <div
                                                                 className={`flex h-6 w-6 items-center justify-center rounded-full ${data.password.length >= 8 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
                                                             >
-                                                                {data.password.length >= 8 ? (
-                                                                    <CheckCircle size={14} />
+                                                                {data.password
+                                                                    .length >=
+                                                                8 ? (
+                                                                    <CheckCircle
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 ) : (
-                                                                    <ChevronRight size={14} />
+                                                                    <ChevronRight
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 )}
                                                             </div>
                                                             <span
                                                                 className={
-                                                                    data.password.length >= 8
+                                                                    data
+                                                                        .password
+                                                                        .length >=
+                                                                    8
                                                                         ? 'text-green-700'
                                                                         : 'text-gray-600'
                                                                 }
@@ -456,35 +478,60 @@ const ProfileForm = () => {
                                                             <div
                                                                 className={`flex h-6 w-6 items-center justify-center rounded-full ${/[A-Z]/.test(data.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
                                                             >
-                                                                {/[A-Z]/.test(data.password) ? (
-                                                                    <CheckCircle size={14} />
+                                                                {/[A-Z]/.test(
+                                                                    data.password,
+                                                                ) ? (
+                                                                    <CheckCircle
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 ) : (
-                                                                    <ChevronRight size={14} />
+                                                                    <ChevronRight
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 )}
                                                             </div>
                                                             <span
                                                                 className={
-                                                                    /[A-Z]/.test(data.password)
+                                                                    /[A-Z]/.test(
+                                                                        data.password,
+                                                                    )
                                                                         ? 'text-green-700'
                                                                         : 'text-gray-600'
                                                                 }
                                                             >
-                                                                Ít nhất 1 chữ in hoa
+                                                                Ít nhất 1 chữ in
+                                                                hoa
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-3 rounded-lg bg-white p-3 shadow-sm">
                                                             <div
                                                                 className={`flex h-6 w-6 items-center justify-center rounded-full ${/[0-9]/.test(data.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
                                                             >
-                                                                {/[0-9]/.test(data.password) ? (
-                                                                    <CheckCircle size={14} />
+                                                                {/[0-9]/.test(
+                                                                    data.password,
+                                                                ) ? (
+                                                                    <CheckCircle
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 ) : (
-                                                                    <ChevronRight size={14} />
+                                                                    <ChevronRight
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 )}
                                                             </div>
                                                             <span
                                                                 className={
-                                                                    /[0-9]/.test(data.password)
+                                                                    /[0-9]/.test(
+                                                                        data.password,
+                                                                    )
                                                                         ? 'text-green-700'
                                                                         : 'text-gray-600'
                                                                 }
@@ -496,20 +543,33 @@ const ProfileForm = () => {
                                                             <div
                                                                 className={`flex h-6 w-6 items-center justify-center rounded-full ${/[!@#$%^&*]/.test(data.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
                                                             >
-                                                                {/[!@#$%^&*]/.test(data.password) ? (
-                                                                    <CheckCircle size={14} />
+                                                                {/[!@#$%^&*]/.test(
+                                                                    data.password,
+                                                                ) ? (
+                                                                    <CheckCircle
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 ) : (
-                                                                    <ChevronRight size={14} />
+                                                                    <ChevronRight
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
                                                                 )}
                                                             </div>
                                                             <span
                                                                 className={
-                                                                    /[!@#$%^&*]/.test(data.password)
+                                                                    /[!@#$%^&*]/.test(
+                                                                        data.password,
+                                                                    )
                                                                         ? 'text-green-700'
                                                                         : 'text-gray-600'
                                                                 }
                                                             >
-                                                                Ít nhất 1 ký tự đặc biệt
+                                                                Ít nhất 1 ký tự
+                                                                đặc biệt
                                                             </span>
                                                         </div>
                                                     </div>

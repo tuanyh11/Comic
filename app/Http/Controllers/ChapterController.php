@@ -34,6 +34,7 @@ class ChapterController extends Controller
     {
         $chapter = Chapter::where('id', $chapter_id)
             ->with('media.media')
+            ->with('comic')
             ->firstOrFail();
 
         $accessData = $this->chapterAccessService->getChapterAccessData($chapter);
@@ -42,6 +43,10 @@ class ChapterController extends Controller
         foreach ($accessData as $key => $value) {
             $chapter->$key = $value;
         }
+
+        // Get next and previous chapters
+        $nextChapter = $chapter->getNextChapter();
+        $prevChapter = $chapter->getPreviousChapter();
 
         // Record reading if unlocked and authenticated
         if ($accessData['is_unlocked'] && Auth::check()) {
@@ -52,13 +57,16 @@ class ChapterController extends Controller
         if ($accessData['is_paid_content'] && !$accessData['is_unlocked']) {
             return Inertia::render('Comic/ChapterLocked', [
                 "chapter" => $chapter,
+                "nextChapter" => $nextChapter,
+                "prevChapter" => $prevChapter,
                 "walletBalance" => Auth::check() ? $this->paymentService->getWalletBalance(Auth::user()) : 0
             ]);
         }
 
-
         return Inertia::render('Comic/Chapter', [
             "chapter" => $chapter,
+            "nextChapter" => $nextChapter,
+            "prevChapter" => $prevChapter,
         ]);
     }
 

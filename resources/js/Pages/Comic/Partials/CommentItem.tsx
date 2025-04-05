@@ -92,11 +92,16 @@ export const CommentItem: FC<CommentItemProps> = ({
                             <span>Thích</span>
                         </button> */}
                         <button
-                            className="flex items-center space-x-1 text-xs text-white transition-colors hover:text-blue-600"
+                            className="group flex items-center space-x-1 text-xs text-white transition-colors"
                             onClick={() => setReplyingTo(comment.id)}
                         >
-                            <Reply size={14} />
-                            <span>Trả lời</span>
+                            <Reply
+                                size={14}
+                                className="transition-colors group-hover:text-blue-600"
+                            />
+                            <span className="transition-colors group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-pink-500 group-hover:bg-clip-text group-hover:text-transparent">
+                                Trả lời
+                            </span>
                         </button>
                     </div>
 

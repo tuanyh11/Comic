@@ -15,7 +15,7 @@ const Breadcrumbs: FC<BreadcrumbsProps> = ({ comic }) => {
                 className="flex items-center transition-colors hover:text-indigo-600"
             >
                 <Home className="mr-1 h-4 w-4" />
-                Trang chủ
+                <span className="hidden sm:inline-block">Trang chủ</span>
             </Link>
             <ChevronRight className="mx-2 h-4 w-4 text-gray-400" />
             <Link

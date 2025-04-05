@@ -106,46 +106,50 @@ const SearchBar = ({
             className={`${
                 isMobile
                     ? isSearchOpen
-                        ? 'absolute left-0 right-0 top-0 z-50 flex bg-gradient-to-r from-blue-500 to-pink-500 p-2'
+                        ? 'absolute left-0 right-0 top-1/2 z-50 flex -translate-y-1/2 bg-gradient-to-r from-blue-500 to-pink-500 p-2'
                         : 'hidden'
                     : 'relative flex bg-transparent'
             } md:relative md:flex md:bg-transparent`}
         >
             <div className="relative w-full">
                 <div className="w-full">
-                    <input
-                        ref={searchInputRef}
-                        type="text"
-                        value={searchQuery}
-                        onChange={handleSearchInputChange}
-                        onFocus={() => {
-                            if (searchResults.length > 0) {
-                                setShowSearchResults(true);
-                            }
-                        }}
-                        placeholder="Tìm kiếm truyện, tác giả..."
-                        className="w-full rounded-full border border-pink-200 bg-white/90 py-2 pl-10 pr-4 focus:border-pink-400 focus:outline-none focus:ring-1 focus:ring-pink-400 md:w-64"
-                    />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                        {isSearching ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <FaSearch />
+                    <div className="relative flex w-full items-center">
+                        <div className="relative flex-1">
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={handleSearchInputChange}
+                                onFocus={() => {
+                                    if (searchResults.length > 0) {
+                                        setShowSearchResults(true);
+                                    }
+                                }}
+                                placeholder="Tìm kiếm truyện, tác giả..."
+                                className="w-full rounded-full border border-pink-200 bg-white/90 py-2 pl-10 pr-4 focus:border-pink-400 focus:outline-none focus:ring-1 focus:ring-pink-400"
+                            />
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                                {isSearching ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <FaSearch />
+                                )}
+                            </div>
+                        </div>
+                        {isMobile && isSearchOpen && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsSearchOpen(false);
+                                    setShowSearchResults(false);
+                                    setSearchQuery('');
+                                }}
+                                className="ml-2 p-2 text-white md:hidden"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
                         )}
                     </div>
-                    {isMobile && isSearchOpen && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setIsSearchOpen(false);
-                                setShowSearchResults(false);
-                                setSearchQuery('');
-                            }}
-                            className="ml-2 p-2 text-white md:hidden"
-                        >
-                            <X className="h-5 w-5" />
-                        </button>
-                    )}
                 </div>
 
                 {/* Search Results Dropdown */}

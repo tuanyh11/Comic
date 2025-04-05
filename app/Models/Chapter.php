@@ -79,8 +79,29 @@ class Chapter extends Model
         return $this->purchasedBy()->where('user_id', $user->id)->exists();
     }
 
+    public function getNextChapter()
+    {
+        return Chapter::where('comic_id', $this->comic_id)
+            ->where('order', '>', $this->order)
+            ->orderBy('order', 'asc')
+            ->first();
+    }
+
+    /**
+     * Get the previous chapter in sequence
+     */
+    public function getPreviousChapter()
+    {
+        return Chapter::where('comic_id', $this->comic_id)
+            ->where('order', '<', $this->order)
+            ->orderBy('order', 'desc')
+            ->first();
+    }
+
     public function readers()
     {
         return $this->hasMany(ReadHistory::class);
     }
- }
+
+    
+}

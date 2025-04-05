@@ -1,13 +1,11 @@
 import { Link } from '@inertiajs/react';
 import {
-    ArrowLeft,
     Bookmark,
     ChevronDown,
     Heart,
+    Home,
     Menu,
     MessageCircle,
-    Settings,
-    Share2,
     X,
 } from 'lucide-react';
 import { FC, useEffect, useState } from 'react';
@@ -18,9 +16,10 @@ interface FloatingButtonsProps {
     isVoted: boolean;
     nextChapterUrl?: string;
     prevChapterUrl?: string;
-    onToggleFullscreen?: () => void;
     chapterId: number;
     comicSlug: string;
+    showBreadcrumb?: boolean;
+    onToggleBreadcrumb?: () => void;
 }
 
 const EnhancedFloatingButtons: FC<FloatingButtonsProps> = ({
@@ -29,57 +28,52 @@ const EnhancedFloatingButtons: FC<FloatingButtonsProps> = ({
     isVoted = false,
     nextChapterUrl,
     prevChapterUrl,
-    onToggleFullscreen,
     chapterId,
-    comicSlug,
+    showBreadcrumb = true,
+    onToggleBreadcrumb,
 }) => {
-    const [showMoreOptions, setShowMoreOptions] = useState(true);
-    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [showMoreOptions, setShowMoreOptions] = useState(false);
+    const [bookmarkPage, setBookmarkPage] = useState<{
+        id: number;
+        page: number;
+    }>();
 
     useEffect(() => {
-        // Check if this chapter is bookmarked in localStorage
         const bookmarks = JSON.parse(
             localStorage.getItem('bookmarkedChapters') || '[]',
-        );
-        setIsBookmarked(bookmarks.includes(chapterId));
+        ) as Array<{ id: number; page: number }>;
+        setBookmarkPage(bookmarks.find(({ id }) => id === chapterId));
     }, [chapterId]);
 
     const toggleBookmark = () => {
         const bookmarks = JSON.parse(
             localStorage.getItem('bookmarkedChapters') || '[]',
+        ) as Array<{ id: number; page: number | string }>;
+        const iframe = document.getElementById(
+            'chapter-ctx',
+        ) as HTMLIFrameElement | null;
+        const currentPage = iframe?.contentDocument?.getElementById(
+            'currentPage',
+        ) as HTMLInputElement;
+
+        // Kiểm tra xem chapter đã có trong bookmark chưa
+        const existingBookmarkIndex = bookmarks.findIndex(
+            (item) => item.id === chapterId,
         );
 
-        if (isBookmarked) {
-            const updatedBookmarks = bookmarks.filter(
-                (id: number) => id !== chapterId,
-            );
-            localStorage.setItem(
-                'bookmarkedChapters',
-                JSON.stringify(updatedBookmarks),
-            );
+        if (existingBookmarkIndex !== -1) {
+            bookmarks[existingBookmarkIndex].page = currentPage?.value || 1;
         } else {
-            bookmarks.push(chapterId);
-            localStorage.setItem(
-                'bookmarkedChapters',
-                JSON.stringify(bookmarks),
-            );
+            bookmarks.push({
+                id: chapterId,
+                page: currentPage?.value || 1,
+            });
         }
 
-        setIsBookmarked(!isBookmarked);
-    };
-
-    const shareChapter = () => {
-        if (navigator.share) {
-            navigator
-                .share({
-                    title: document.title,
-                    url: window.location.href,
-                })
-                .catch(console.error);
-        } else {
-            // Fallback: copy to clipboard
-            navigator.clipboard.writeText(window.location.href);
-            alert('Link đã được sao chép!');
+        localStorage.setItem('bookmarkedChapters', JSON.stringify(bookmarks));
+        const bookmark = bookmarks.find(({ id }) => id === chapterId);
+        if (bookmark) {
+            setBookmarkPage(bookmark);
         }
     };
 
@@ -101,14 +95,6 @@ const EnhancedFloatingButtons: FC<FloatingButtonsProps> = ({
             {/* All Options */}
             {showMoreOptions && (
                 <div className="animate-fade-in absolute bottom-16 right-0 flex flex-col gap-3">
-                    <button
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg transition-all hover:bg-gray-50"
-                        onClick={() => window.history.back()}
-                        title="Quay lại"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </button>
-
                     {prevChapterUrl && (
                         <Link
                             href={prevChapterUrl}
@@ -153,33 +139,42 @@ const EnhancedFloatingButtons: FC<FloatingButtonsProps> = ({
 
                     <button
                         onClick={toggleBookmark}
-                        className={`flex h-10 w-10 items-center justify-center rounded-full shadow-lg ${
-                            isBookmarked
-                                ? 'bg-yellow-500 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-50'
-                        } transition-all`}
-                        title={isBookmarked ? 'Đã đánh dấu' : 'Đánh dấu'}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full shadow-xl ${
+                            bookmarkPage && bookmarkPage.page > 1
+                                ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white ring-offset-2'
+                                : 'bg-white text-gray-700 hover:scale-110 hover:bg-gray-50'
+                        } transform transition-all duration-300 hover:shadow-2xl focus:outline-none`}
+                        title={bookmarkPage?.page ? 'Đã đánh dấu' : 'Đánh dấu'}
                     >
                         <Bookmark
-                            className={`h-5 w-5 ${isBookmarked ? 'fill-white' : ''}`}
+                            className={`h-6 w-6 ${bookmarkPage?.page ? 'fill-white' : ''} transition-all`}
                         />
+                        {bookmarkPage && bookmarkPage.page > 0 && (
+                            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-yellow-500 shadow-md">
+                                {bookmarkPage?.page}
+                            </span>
+                        )}
                     </button>
 
-                    <button
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg transition-all hover:bg-gray-50"
-                        onClick={shareChapter}
-                        title="Chia sẻ"
-                    >
-                        <Share2 className="h-5 w-5" />
-                    </button>
-
-                    <button
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg transition-all hover:bg-gray-50"
-                        onClick={onToggleFullscreen}
-                        title="Toàn màn hình"
-                    >
-                        <Settings className="h-5 w-5" />
-                    </button>
+                    {onToggleBreadcrumb && (
+                        <button
+                            className={`flex h-10 w-10 items-center justify-center rounded-full shadow-lg ${
+                                showBreadcrumb
+                                    ? 'bg-white text-gray-700 hover:bg-gray-50'
+                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                            } transition-all`}
+                            onClick={onToggleBreadcrumb}
+                            title={
+                                showBreadcrumb
+                                    ? 'Ẩn điều hướng'
+                                    : 'Hiện điều hướng'
+                            }
+                        >
+                            <Home
+                                className={`h-5 w-5 ${!showBreadcrumb ? 'opacity-60' : ''}`}
+                            />
+                        </button>
+                    )}
                 </div>
             )}
         </div>

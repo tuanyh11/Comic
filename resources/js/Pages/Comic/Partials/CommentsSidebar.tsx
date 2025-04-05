@@ -63,7 +63,7 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
 
     return (
         <div
-            className={`fixed right-0 top-0 z-10 h-full overflow-hidden bg-gradient-to-br from-blue-600/90 to-pink-500/90 backdrop-blur-md transition-transform ${
+            className={`fixed right-0 top-0 z-10 h-full overflow-hidden bg-black/30 backdrop-blur-sm transition-transform ${
                 showComments ? 'translate-x-0' : 'translate-x-full'
             }`}
             style={{

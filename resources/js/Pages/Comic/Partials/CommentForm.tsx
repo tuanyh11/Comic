@@ -29,7 +29,7 @@ export const CommentForm: FC<CommentFormProps> = ({
             <Avatar user={user} size={onCancel ? 'sm' : 'md'} />
             <div className="flex-grow">
                 <textarea
-                    className="w-full rounded-lg border border-gray-200 p-3 text-sm placeholder-gray-400 shadow-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    className="w-full rounded-lg border border-gray-200 p-3 text-sm placeholder-gray-400 shadow-sm outline-none transition-colors focus:outline-none"
                     rows={rows}
                     placeholder={placeholder}
                     value={value}
