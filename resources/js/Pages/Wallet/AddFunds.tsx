@@ -16,7 +16,7 @@ const AddFundsPage = () => {
     const [amount, setAmount] = useState('');
 
     // Sử dụng useForm hook từ Inertia.js
-    const { setData, post, processing, errors } = useForm({
+    const { setData, get, processing, errors } = useForm({
         amount: '',
     });
 
@@ -30,7 +30,7 @@ const AddFundsPage = () => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        post(route('payment.vnpay.create-wallet-payment'));
+        get(route('payment.vnpay.create-wallet-payment'));
     };
 
     return (

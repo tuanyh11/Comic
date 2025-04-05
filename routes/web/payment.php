@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('payment')->name('payment.')->group(function () {
     // VNPay routes
     Route::prefix('vnpay')->name('vnpay.')->group(function () {
-        Route::post('/create-wallet-payment', [VNPayController::class, 'createPaymentForWallet'])->name('create-wallet-payment');
+        Route::get('/create-wallet-payment', [VNPayController::class, 'createPaymentForWallet'])->name('create-wallet-payment');
         Route::post('/create-chapter-payment/{chapter}', [VNPayController::class, 'createPaymentForChapter'])->name('create-chapter-payment');
         Route::get('/return', [VNPayController::class, 'handleReturnUrl'])->name('return');
     });

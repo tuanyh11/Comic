@@ -32,7 +32,7 @@ class ComicResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return app()->getLocale() === 'vi' ? 'Truyện Tranh' : 'Comics';
+        return __('Some');
     }
 
     public static function form(Form $form): Form

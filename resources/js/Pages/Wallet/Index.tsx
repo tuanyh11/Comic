@@ -14,8 +14,19 @@ import {
 } from 'lucide-react';
 import { FC } from 'react';
 
-const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
+// Cập nhật interface props để bao gồm các thông tin mới
+interface WalletPageProps {
+    transactions: LaravelPagination<Transaction>;
+    totalDeposit: string;
+    totalSpending: string;
+    lastDepositDate: string;
+}
+
+const WalletPage: FC<WalletPageProps> = ({
     transactions,
+    totalDeposit,
+    totalSpending,
+    lastDepositDate,
 }) => {
     const { wallet } = usePage().props;
     const form = useForm({
@@ -108,7 +119,7 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                             Tổng nạp
                                         </p>
                                         <p className="text-lg font-bold text-white">
-                                            120,000 VND
+                                            {totalDeposit}
                                         </p>
                                     </div>
                                 </div>
@@ -122,7 +133,7 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                             Tổng chi tiêu
                                         </p>
                                         <p className="text-lg font-bold text-white">
-                                            45,000 VND
+                                            {totalSpending}
                                         </p>
                                     </div>
                                 </div>
@@ -136,7 +147,7 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
                                             Lần nạp gần nhất
                                         </p>
                                         <p className="text-lg font-bold text-white">
-                                            15/03/2025
+                                            {lastDepositDate}
                                         </p>
                                     </div>
                                 </div>
@@ -146,6 +157,7 @@ const WalletPage: FC<{ transactions: LaravelPagination<Transaction> }> = ({
 
                     {/* Add Funds Form with VNPay */}
                     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                        {/* ... phần còn lại của component giữ nguyên ... */}
                         <div className="overflow-hidden rounded-xl bg-white shadow-lg md:col-span-2">
                             <div className="p-6">
                                 <div className="mb-6 flex items-center gap-3">
