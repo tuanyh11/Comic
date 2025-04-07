@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\User;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -22,6 +24,11 @@ class UserResource extends Resource
     protected static ?string $navigationGroup = 'User Management';
     
     protected static ?int $navigationSort = 1;
+
+    public static function getLabelName(): string
+    {
+        return __('User');
+    }
 
     public static function form(Form $form): Form
     {

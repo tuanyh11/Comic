@@ -5,14 +5,19 @@ namespace App\Lang\Traits;
 trait HasTranslate
 {
 
-    public static function use_translate()
-    {
-        $resources = (require __DIR__ . '/../vi/filament-panels.php')['resources'];
-        return $resources[class_basename(static::class)]['label'] ?? class_basename(static::class);
-    }
-
+    abstract protected static function getLabelName(): string;
     public static function getNavigationLabel(): string
     {
-        return self::use_translate();
+        return __(self::getLabelName());
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __(self::getLabelName());
+    }
+
+    public static function getLabel(): string
+    {
+        return __(self::getLabelName());
     }
 };

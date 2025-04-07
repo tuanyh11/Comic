@@ -12,6 +12,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 
 class AuthorResource extends Resource
@@ -25,6 +28,10 @@ class AuthorResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    protected static function getLabelName(): string
+    {
+        return __('Authors');
+    }
 
     public static function form(Form $form): Form
     {
@@ -35,28 +42,37 @@ class AuthorResource extends Resource
     }
 
 
-    public static function formSchema() {
-        return Forms\Components\Section::make('Author Information')
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
+    public static function formSchema()
+    {
+        return Section::make('Author Information')
+            ->schema([
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
 
-                        Forms\Components\TextInput::make('stage_name')
-                            ->maxLength(255),
+                TextInput::make('stage_name')
+                    ->label('Stage Name')
+                    ->required()
+                    ->translateLabel('Stage Name')
+                    ->maxLength(255),
+                Textarea::make('description')
+                    ->label('Description')
+                    ->translateLabel('Description')
+                    ->maxLength(65535)
+                    ->required()
+                    ->columnSpanFull(),
+                CuratorPicker::make('document_ids')
+                    ->multiple()
+                    ->label('Profile Picture')
+                    ->translateLabel('Profile Picture')
+                    ->acceptedFileTypes(['image/*'])
+                    ->relationship('media', 'id')
+                    ->orderColumn('order') // Optional: Rename the order column if needed
+                    ->typeColumn('type') // Optional: Rename the type column if needed
+                    ->typeValue('author'),
 
-                        CuratorPicker::make('document_ids')
-                            ->multiple()
-                            ->label('Profile Image')
-                            ->relationship('media', 'id')
-                            ->orderColumn('order') // Optional: Rename the order column if needed
-                            ->typeColumn('type') // Optional: Rename the type column if needed
-                            ->typeValue('author'),
 
-                        Forms\Components\Textarea::make('description')
-                            ->maxLength(65535)
-                            ->columnSpanFull(),
-                    ])->columns(2);
+            ])->columns(2);
     }
 
     public static function table(Table $table): Table
@@ -64,14 +80,18 @@ class AuthorResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->translateLabel('Name')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('stage_name')
+                    ->label('Stage Name')
+                    ->translateLabel('Stage Name')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('comics_count')
                     ->counts('comics')
                     ->label('Comics')
+                    ->translateLabel('Comics')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')

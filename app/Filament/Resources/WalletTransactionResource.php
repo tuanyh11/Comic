@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WalletTransactionResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\WalletTransaction;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +13,7 @@ use Filament\Tables\Table;
 
 class WalletTransactionResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = WalletTransaction::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
@@ -23,6 +25,11 @@ class WalletTransactionResource extends Resource
     protected static ?string $modelLabel = 'Wallet Transaction';
     
     protected static ?string $pluralModelLabel = 'Wallet Transactions';
+
+    protected static function getLabelName(): string
+    {
+        return __('Wallet Transaction');
+    }
 
     public static function form(Form $form): Form
     {

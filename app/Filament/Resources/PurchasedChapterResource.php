@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PurchasedChapterResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\PurchasedChapter;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +13,7 @@ use Filament\Tables\Table;
 
 class PurchasedChapterResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = PurchasedChapter::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
@@ -21,6 +23,11 @@ class PurchasedChapterResource extends Resource
     protected static ?int $navigationSort = 4;
     
     protected static ?string $pluralModelLabel = 'Purchased Chapters';
+
+    protected static function getLabelName(): string
+    {
+        return __('Purchased Chapter');
+    }
 
     public static function form(Form $form): Form
     {

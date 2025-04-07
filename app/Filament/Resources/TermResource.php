@@ -25,6 +25,11 @@ class TermResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+
+    protected static function getLabelName(): string
+    {
+        return __('Terms');
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -35,6 +40,7 @@ class TermResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('title')
                                     ->required()
+                                    ->translateLabel()
                                     ->maxLength(255),
                                 
                                 Forms\Components\Select::make('type')
@@ -46,9 +52,11 @@ class TermResource extends Resource
                                         'refund_policy' => 'Refund Policy',
                                         'other' => 'Other'
                                     ])
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('version')
+                                    ->translateLabel()
                                     ->numeric()
                                     ->default(1)
                                     ->required(),
@@ -56,14 +64,15 @@ class TermResource extends Resource
                                 Forms\Components\Toggle::make('is_active')
                                     ->label('Active')
                                     ->default(true)
-                                    ->helperText('Only one active document per type is recommended'),
+                                    ->helperText(__('Only one active document per type is recommended')),
                                 
                                 Forms\Components\DateTimePicker::make('published_at')
                                     ->label('Publish Date')
+                                    ->translateLabel()
                                     ->default(now()),
                             ])->columns(2),
                         
-                        Forms\Components\Section::make('Content')
+                        Forms\Components\Section::make(__('Content'))
                             ->schema([
                                 Forms\Components\RichEditor::make('content')
                                     ->required()
@@ -82,25 +91,12 @@ class TermResource extends Resource
                                         'redo',
                                         'undo',
                                     ])
+                                    ->translateLabel()
                                     ->columnSpanFull(),
                             ]),
                     ])
-                    ->columnSpan(['lg' => 2]),
+                    ->columnSpan(['lg' => 3]),
                 
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make('Status Information')
-                            ->schema([
-                                Forms\Components\Placeholder::make('created_at')
-                                    ->label('Created')
-                                    ->content(fn (?Term $record): string => $record?->created_at?->diffForHumans() ?? '-'),
-                                
-                                Forms\Components\Placeholder::make('updated_at')
-                                    ->label('Last Updated')
-                                    ->content(fn (?Term $record): string => $record?->updated_at?->diffForHumans() ?? '-'),
-                            ]),
-                    ])
-                    ->columnSpan(['lg' => 1]),
             ])
             ->columns(3);
     }
@@ -111,6 +107,7 @@ class TermResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
+                    ->translateLabel(true)
                     ->sortable(),
                 
                 Tables\Columns\SelectColumn::make('type')
@@ -122,19 +119,23 @@ class TermResource extends Resource
                         'refund_policy' => 'Refund Policy',
                         'other' => 'Other'
                     ])
+                    ->translateLabel(true)
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('version')
                     ->numeric()
+                    ->translateLabel(true)
                     ->sortable(),
                 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->label('Active')
+                    ->translateLabel(true)
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime()
+                    ->translateLabel(true)
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('created_at')

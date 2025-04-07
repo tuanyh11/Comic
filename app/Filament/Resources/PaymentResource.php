@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PaymentResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\Payment;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +13,7 @@ use Filament\Tables\Table;
 
 class PaymentResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = Payment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
@@ -19,6 +21,11 @@ class PaymentResource extends Resource
     protected static ?string $navigationGroup = 'Financial Management';
     
     protected static ?int $navigationSort = 2;
+
+    protected static function getLabelName(): string
+    {
+        return __('Payment');
+    }
 
     public static function form(Form $form): Form
     {

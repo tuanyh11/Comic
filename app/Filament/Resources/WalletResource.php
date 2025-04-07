@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\CURRENCY;
 use App\Filament\Resources\WalletResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\Wallet;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Filament\Tables\Table;
 
 class WalletResource extends Resource
 {
+    use HasTranslate;
     protected static ?string $model = Wallet::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
@@ -20,6 +22,11 @@ class WalletResource extends Resource
     protected static ?string $navigationGroup = 'Financial Management';
     
     protected static ?int $navigationSort = 1;
+
+    protected static function getLabelName(): string
+    {
+        return __('Wallet');
+    }
 
     public static function form(Form $form): Form
     {

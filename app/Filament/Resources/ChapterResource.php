@@ -7,6 +7,12 @@ use App\Lang\Traits\HasTranslate;
 use App\Models\Chapter;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,6 +32,11 @@ class ChapterResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+
+    protected static function getLabelName(): string
+    {
+        return __('Chapters');
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -33,38 +44,46 @@ class ChapterResource extends Resource
             ->columns(3);
     }
 
+
     public static function formSchema(bool $isHiddenComic = false)
     {
-        return Forms\Components\Group::make()->schema([
-            Forms\Components\Group::make()
+        return Group::make()->schema([
+            Group::make()
                 ->schema([
-                    Forms\Components\Section::make('Chapter Information')
+                    Section::make(__('Information'))
                         ->schema([
-                            Forms\Components\Select::make('comic_id')
+                            Select::make('comic_id')
+                                ->label('Comic')
+                                ->translateLabel('Comic')
                                 ->relationship('comic', 'title')
                                 ->required()
                                 ->searchable()
                                 ->hidden($isHiddenComic)
                                 ->preload(),
 
-                            Forms\Components\TextInput::make('title')
+                            TextInput::make('title')
                                 ->required()
+                                ->translateLabel('Title')
                                 ->maxLength(255),
 
-                            Forms\Components\TextInput::make('order')
+                            TextInput::make('order')
                                 ->integer()
+                                ->translateLabel('Order')
                                 ->default(fn(Forms\Get $get) =>
                                 Chapter::where('comic_id', $get('comic_id'))->max('order') + 1)
                                 ->required(),
 
-                            Forms\Components\Textarea::make('description')
+                            Textarea::make('description')
                                 ->maxLength(65535)
+                                ->translateLabel('Description')
                                 ->columnSpanFull(),
 
                             CuratorPicker::make('document_ids')
                                 ->multiple()
                                 ->required()
                                 ->label('Content')
+                                ->translateLabel('Content')
+                                ->acceptedFileTypes(['application/pdf'])
                                 ->relationship('media', 'id')
                                 ->orderColumn('order') // Optional: Rename the order column if needed
                                 ->typeColumn('type') // Optional: Rename the type column if needed
@@ -73,41 +92,52 @@ class ChapterResource extends Resource
                 ])
                 ->columnSpan(['lg' => 2]),
 
-            Forms\Components\Group::make()
+            Group::make()
                 ->schema([
-                    Forms\Components\Section::make('Access Settings')
+                    Section::make(__('Access Settings'))
                         ->schema([
-                            Forms\Components\TextInput::make('pricing')
+                            TextInput::make('pricing')
                                 ->numeric()
+                                ->label('Price')
+                                ->translateLabel('Price')
                                 ->default(0)
                                 ->suffix('VND')
-                                ->helperText('0 for free access')
-                                ->required(),
+                                ->minValue(10000)
+                                ->required()
+                                ->live()
+                                ->helperText(
+                                    fn(\Filament\Forms\Get $get) =>
+                                    number_format((int)$get('pricing'), 0, ',', '.') . ' VND'
+                                ),
                         ]),
 
-                    Forms\Components\Section::make('Statistics')
+                    Section::make(__('Statistics'))
                         ->schema([
-                            Forms\Components\Placeholder::make('read_count')
+                            Placeholder::make('read_count')
                                 ->label('Read Count')
+                                ->translateLabel('Read Count')
                                 ->content(fn(?Chapter $record): int => $record?->read_count ?? 0),
 
-                            Forms\Components\Placeholder::make('vote_count')
+                            Placeholder::make('vote_count')
                                 ->label('Vote Count')
+                                ->translateLabel('Vote Count')
                                 ->content(fn(?Chapter $record): int => $record?->vote_count ?? 0),
 
-                            Forms\Components\Placeholder::make('purchases_count')
+                            Placeholder::make('purchases_count')
                                 ->label('Purchases')
+                                ->translateLabel('Purchases')
                                 ->content(fn(?Chapter $record): int => $record?->purchasedBy()->count() ?? 0),
 
-                            Forms\Components\Placeholder::make('revenue')
+                            Placeholder::make('revenue')
                                 ->label('Revenue')
+                                ->translateLabel('Revenue')
                                 ->content(fn(?Chapter $record): string =>
                                 number_format($record?->payments()->sum('amount') ?? 0) . ' VND'),
                         ]),
                 ])
                 ->columnSpan(['lg' => 1])
         ])
-        ->columnSpanFull();
+            ->columnSpanFull();
     }
 
     public static function table(Table $table): Table
@@ -115,27 +145,36 @@ class ChapterResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('comic.title')
+                    ->label('Comic')
+                    ->translateLabel('Comic')
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
+                    ->translateLabel('Title')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('order')
-                    ->sortable(),
+                    ->sortable()
+                    ->translateLabel('Order'),
 
                 Tables\Columns\TextColumn::make('pricing')
                     ->money('VND')
                     ->label('Price')
+                    ->translateLabel('Price')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('read_count')
                     ->sortable()
+                    ->label('Read Count')
+                    ->translateLabel('Read Count')
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('vote_count')
                     ->sortable()
+                    ->label('Vote Count')
+                    ->translateLabel('Vote Count')
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('created_at')

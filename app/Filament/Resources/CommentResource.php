@@ -25,6 +25,10 @@ class CommentResource extends Resource
     
     protected static ?string $recordTitleAttribute = 'content';
 
+    protected static function getLabelName(): string
+    {
+        return __('Comments');
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -36,21 +40,25 @@ class CommentResource extends Resource
                                 Forms\Components\Select::make('user_id')
                                     ->relationship('user', 'name')
                                     ->searchable()
+                                    ->translateLabel()
                                     ->preload()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('chapter_id')
                                     ->relationship('chapter', 'title')
                                     ->searchable()
+                                    ->translateLabel()
                                     ->preload(),
                                 
                                 Forms\Components\Select::make('comic_id')
                                     ->relationship('comic', 'title')
                                     ->searchable()
+                                    ->translateLabel()
                                     ->preload(),
                                 
                                 Forms\Components\Select::make('parent_id')
                                     ->label('Reply to')
+                                    ->translateLabel()
                                     ->relationship('parent', 'id', fn ($query) => $query->with('user'))
                                     ->getOptionLabelFromRecordUsing(fn ($record) => 
                                         "ID: {$record->id} - User: {$record->user->name} - Comment: " . 
@@ -60,10 +68,11 @@ class CommentResource extends Resource
                                 
                                 Forms\Components\Textarea::make('content')
                                     ->required()
+                                    ->translateLabel()
                                     ->maxLength(65535)
                                     ->columnSpanFull(),
-                            ])->columns(2),
-                    ]),
+                            ])->columns(2)->columnSpanFull(),
+                    ])->columnSpanFull(),
             ]);
     }
 
@@ -73,29 +82,37 @@ class CommentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
+                    ->label('User')
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('content')
                     ->searchable()
+                    ->translateLabel()
                     ->limit(50),
                 
                 Tables\Columns\TextColumn::make('comic.title')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(),
                 
                 Tables\Columns\TextColumn::make('chapter.title')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(),
                 
                 Tables\Columns\TextColumn::make('replies_count')
                     ->counts('replies')
                     ->label('Replies')
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->label('Created At')
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('updated_at')

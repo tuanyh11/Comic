@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\StatusResource\Pages;
+use App\Lang\Traits\HasTranslate;
 use App\Models\Status;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,7 +15,7 @@ use Illuminate\Support\Str;
 
 class StatusResource extends Resource
 {
-    use Translatable;
+    use HasTranslate;
     protected static ?string $model = Status::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
@@ -23,6 +24,10 @@ class StatusResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static function getLabelName(): string
+    {
+        return __('Status');
+    }
     public static function form(Form $form): Form
     {
         return $form
