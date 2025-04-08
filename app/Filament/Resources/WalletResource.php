@@ -18,9 +18,9 @@ class WalletResource extends Resource
     protected static ?string $model = Wallet::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
-    
+
     protected static ?string $navigationGroup = 'Financial Management';
-    
+
     protected static ?int $navigationSort = 1;
 
     protected static function getLabelName(): string
@@ -36,21 +36,29 @@ class WalletResource extends Resource
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
+                    ->translateLabel()
                     ->required(),
-                
+
                 Forms\Components\TextInput::make('balance')
                     ->numeric()
                     ->suffix('VND')
                     ->default(0)
-                    ->required(),
-                
+                    ->translateLabel()
+                    ->required()
+                    ->helperText(
+                        fn(\Filament\Forms\Get $get) =>
+                        number_format((int)$get('balance'), 0, ',', '.') . ' VND'
+                    ),
+
                 Forms\Components\Select::make('currency')
                     ->options([
                         CURRENCY::getAll()
                     ])
                     ->searchable()
                     ->default(CURRENCY::VND->toString())
-                    ->required(),
+                    ->translateLabel()
+                    ->required()
+                    
             ]);
     }
 
@@ -60,29 +68,35 @@ class WalletResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('balance')
                     ->money('VND')
+                    ->translateLabel()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('currency')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('transactions_count')
                     ->counts('transactions')
                     ->label('Transactions')
+                    ->translateLabel()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -91,42 +105,45 @@ class WalletResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('add_funds')
-                    ->label('Add Funds')
-                    ->icon('heroicon-o-plus-circle')
-                    ->form([
-                        Forms\Components\TextInput::make('amount')
-                            ->label('Amount')
-                            ->numeric()
-                            ->suffix('VND')
-                            ->minValue(1)
-                            ->required(),
-                        
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
-                            ->required(),
-                    ])
-                    ->action(function (Wallet $record, array $data): void {
-                        // Add funds to the wallet
-                        $record->balance += $data['amount'];
-                        $record->save();
-                        
-                        // Create transaction record
-                        $record->transactions()->create([
-                            'user_id' => $record->user_id,
-                            'transaction_id' => 'ADMIN-' . uniqid(),
-                            'type' => 'deposit',
-                            'amount' => $data['amount'],
-                            'balance_before' => $record->balance - $data['amount'],
-                            'balance_after' => $record->balance,
-                            'description' => $data['description'],
-                            'status' => 'completed',
-                            'metadata' => [
-                                'method' => 'admin',
-                                'admin_note' => $data['description'],
-                            ],
-                        ]);
-                    }),
+                // Tables\Actions\Action::make('add_funds')
+                //     ->label('Add Funds')
+                //     ->translateLabel()
+                //     ->icon('heroicon-o-plus-circle')
+                //     ->form([
+                //         Forms\Components\TextInput::make('amount')
+                //             ->label('Amount')
+                //             ->translateLabel()
+                //             ->numeric()
+                //             ->suffix('VND')
+                //             ->minValue(1)
+                //             ->required(),
+
+                //         Forms\Components\Textarea::make('description')
+                //             ->label('Description')
+                //             ->translateLabel()
+                //             ->required(),
+                //     ])
+                //     ->action(function (Wallet $record, array $data): void {
+                //         // Add funds to the wallet
+                //         $record->balance += $data['amount'];
+                //         $record->save();
+
+                //         // Create transaction record
+                //         $record->transactions()->create([
+                //             'user_id' => $record->user_id,
+                //             'transaction_id' => 'ADMIN-' . uniqid(),
+                //             'type' => 'deposit',
+                //             'amount' => $data['amount'],
+                //             'balance_before' => $record->balance - $data['amount'],
+                //             'balance_after' => $record->balance,
+                //             'description' => $data['description'],
+                //             'status' => 'completed',
+                //             'metadata' => [
+                //                 'method' => 'admin',
+                //                 'admin_note' => $data['description'],
+                //             ],
+                //         ]);
+                //     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

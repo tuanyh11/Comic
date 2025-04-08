@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
          LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
             $switch
-                ->locales(['ar','en','fr', 'vi']); // also accepts a closure
+                ->locales(['en', 'vi']); // also accepts a closure
         });
     }
 }

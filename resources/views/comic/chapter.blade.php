@@ -42,7 +42,7 @@
 
     DFLIP.defaults.onReady = function (app) {
         const bookmarkers = JSON.parse(localStorage.getItem('bookmarkedChapters'))
-        const currentBookmarker = bookmarkers.find((bookmarker) => bookmarker.id === {{$chapter->id}})
+        const currentBookmarker = bookmarkers?.find((bookmarker) => bookmarker.id === {{$chapter->id}})
         if (currentBookmarker) {
             console.log(currentBookmarker);
 

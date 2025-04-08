@@ -20,6 +20,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+});
+
 // Comic search API endpoint
 Route::get('/comics/search', [ComicController::class, 'search']);
 

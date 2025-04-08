@@ -19,7 +19,7 @@ interface CommentsSidebarProps {
     loadMoreComments: () => void;
     loadMoreReplies: (commentId: number, page: number) => void;
     commentPagination?: LaravelPagination<Comment>;
-    replyPaginations: Record<number, LaravelPagination<Comment>>; // Đã cập nhật kiểu dữ liệu
+    replyPaginations: Record<number, LaravelPagination<Comment>>;
 }
 
 export const CommentsSidebar: FC<CommentsSidebarProps> = ({
@@ -39,14 +39,16 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
     commentPagination,
     replyPaginations,
 }) => {
-    // Group comments and their replies
+    // Group comments and their replies for better organization
     const groupedComments = useMemo(() => {
+        // Get parent comments (those with no parent_id)
         const parentComments = comments.filter(
             (comment) => comment.parent_id === null,
         );
 
+        // For each parent, get its replies
         return parentComments.map((parentComment) => {
-            const replies = comments?.filter(
+            const replies = comments.filter(
                 (comment) => comment.parent_id === parentComment.id,
             );
             return {
@@ -56,20 +58,22 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
         });
     }, [comments]);
 
-    // Xử lý sự kiện khi người dùng nhập comment mới
+
     const handleCommentChange = (value: string) => {
         setNewComment(value);
     };
+
+    // Check if there are any comments to display
+    const hasComments = groupedComments.length > 0;
 
     return (
         <div
             className={`fixed right-0 top-0 z-10 h-full overflow-hidden bg-black/30 backdrop-blur-sm transition-transform ${
                 showComments ? 'translate-x-0' : 'translate-x-full'
             }`}
-            style={{
-                width: `${sidebarWidth}px`,
-            }}
+            style={{ width: `${sidebarWidth}px` }}
         >
+            {/* Header with comment count and close button */}
             <div className="flex items-center justify-between border-b border-white/20 p-4">
                 <h3 className="flex items-center gap-2 text-lg font-medium text-white">
                     <MessageCircle className="h-5 w-5" />
@@ -79,12 +83,13 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
                 <button
                     onClick={toggleComments}
                     className="rounded-full p-2 text-white/80 transition-all hover:bg-white/10 hover:text-white"
+                    aria-label="Close comments"
                 >
                     <X size={20} />
                 </button>
             </div>
 
-            {/* Add comment form */}
+            {/* Comment form for adding new comments */}
             <div className="border-b border-white/20 p-4">
                 <CommentForm
                     user={currentUser}
@@ -95,14 +100,15 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
                 />
             </div>
 
-            {/* Comments list */}
+            {/* Comments list with scrolling */}
             <div
                 ref={commentListRef}
                 className="scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent h-[76vh] overflow-y-auto pb-16"
             >
                 <div className="divide-y divide-white/10">
-                    {groupedComments.length > 0 ? (
+                    {hasComments ? (
                         <>
+                            {/* Render all comments and their replies */}
                             {groupedComments.map(({ comment, replies }) => (
                                 <CommentItem
                                     key={comment.id}
@@ -118,7 +124,7 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
                                 />
                             ))}
 
-                            {/* Load more comments button */}
+                            {/* Load more comments button - only show if there are more pages */}
                             {commentPagination &&
                                 commentPagination.current_page <
                                     commentPagination.last_page && (
@@ -134,6 +140,7 @@ export const CommentsSidebar: FC<CommentsSidebarProps> = ({
                                 )}
                         </>
                     ) : (
+                        /* Empty state - no comments yet */
                         <div className="flex h-32 items-center justify-center">
                             <div className="rounded-lg bg-white/10 p-6 text-center backdrop-blur-sm">
                                 <p className="text-white">

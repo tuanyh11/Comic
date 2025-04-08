@@ -1,7 +1,8 @@
 import useOutsideClick from '@/hooks/useOutsideClick';
 import { Link } from '@inertiajs/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 type Notification = {
     id: string;
@@ -14,15 +15,17 @@ type Notification = {
     created_at: string;
 };
 
+type NotificationsResponse = {
+    notifications: Notification[];
+};
+
 interface NotificationsDropdownProps {
     userId: number | string;
 }
 
 const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const queryClient = useQueryClient();
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -32,85 +35,101 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
         if (isOpen) setIsOpen(false);
     }, [buttonRef]);
 
-    // Fetch notifications
-    useEffect(() => {
-        const fetchNotifications = async () => {
-            if (isOpen && notifications.length === 0) {
-                try {
-                    setLoading(true);
-                    const response = await fetch('/notifications');
-                    const data = await response.json();
-
-                    if (data && data.notifications) {
-                        setNotifications(data.notifications);
-
-                        // Count unread notifications
-                        const unread = data.notifications.filter(
-                            (notification: Notification) =>
-                                notification.read_at === null,
-                        ).length;
-
-                        setUnreadCount(unread);
-                    }
-                } catch (error) {
-                    console.error('Error fetching notifications:', error);
-                } finally {
-                    setLoading(false);
-                }
+    // Fetch notifications using React Query
+    const { data, isLoading } = useQuery<NotificationsResponse>({
+        queryKey: ['notifications', userId],
+        queryFn: async () => {
+            const response = await fetch('/api/notifications');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        };
+            return response.json() as Promise<NotificationsResponse>;
+        },
+        enabled: isOpen, // Only fetch when dropdown is open
+        staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    });
 
-        fetchNotifications();
-    }, [isOpen, notifications.length]);
+    const notifications = data?.notifications || [];
+    const unreadCount = notifications.filter(
+        (notification) => notification.read_at === null,
+    ).length;
 
-    // Mark notification as read
-    const markAsRead = async (id: string) => {
-        try {
-            await fetch(`/notifications/${id}/read`, {
+    // Mark notification as read mutation
+    const markAsReadMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(`/notifications/${id}/mark-as-read`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
+            if (!response.ok) {
+                throw new Error('Failed to mark notification as read');
+            }
+            return id;
+        },
+        onSuccess: (id) => {
+            // Update cache optimistically
+            queryClient.setQueryData<NotificationsResponse>(
+                ['notifications', userId],
+                (oldData) => {
+                    if (!oldData || !oldData.notifications)
+                        return oldData as NotificationsResponse;
 
-            // Update local state
-            setNotifications(
-                notifications.map((notification) =>
-                    notification.id === id
-                        ? { ...notification, read_at: new Date().toISOString() }
-                        : notification,
-                ),
+                    return {
+                        ...oldData,
+                        notifications: oldData.notifications.map(
+                            (notification) =>
+                                notification.id === id
+                                    ? {
+                                          ...notification,
+                                          read_at: new Date().toISOString(),
+                                      }
+                                    : notification,
+                        ),
+                    };
+                },
             );
+        },
+    });
 
-            setUnreadCount((prevCount) => Math.max(0, prevCount - 1));
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
-        }
-    };
-
-    // Mark all as read
-    const markAllAsRead = async () => {
-        try {
-            await fetch('/api/notifications/mark-all-read', {
+    // Mark all as read mutation
+    const markAllAsReadMutation = useMutation({
+        mutationFn: async () => {
+            const response = await fetch('/notifications/mark-all-read', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
+            if (!response.ok) {
+                throw new Error('Failed to mark all notifications as read');
+            }
+            return true;
+        },
+        onSuccess: () => {
+            // Update cache optimistically
+            queryClient.setQueryData<NotificationsResponse>(
+                ['notifications', userId],
+                (oldData) => {
+                    if (!oldData || !oldData.notifications)
+                        return oldData as NotificationsResponse;
 
-            // Update local state
-            setNotifications(
-                notifications.map((notification) => ({
-                    ...notification,
-                    read_at: notification.read_at || new Date().toISOString(),
-                })),
+                    return {
+                        ...oldData,
+                        notifications: oldData.notifications.map(
+                            (notification) => ({
+                                ...notification,
+                                read_at:
+                                    notification.read_at ||
+                                    new Date().toISOString(),
+                            }),
+                        ),
+                    };
+                },
             );
-
-            setUnreadCount(0);
-        } catch (error) {
-            console.error('Error marking all notifications as read:', error);
-        }
-    };
+        },
+    });
 
     // Format date for display
     const formatDate = (dateString: string) => {
@@ -155,8 +174,9 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
                         <h3 className="font-semibold">Thông báo</h3>
                         {notifications.length > 0 && unreadCount > 0 && (
                             <button
-                                onClick={markAllAsRead}
+                                onClick={() => markAllAsReadMutation.mutate()}
                                 className="text-sm text-blue-600 hover:text-blue-800"
+                                disabled={markAllAsReadMutation.isPending}
                             >
                                 Đánh dấu tất cả là đã đọc
                             </button>
@@ -164,7 +184,7 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
                     </div>
 
                     <div className="max-h-96 overflow-y-auto">
-                        {loading ? (
+                        {isLoading ? (
                             <div className="flex flex-col items-center justify-center p-6 text-center">
                                 <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                                 <p className="mt-2 text-sm text-gray-500">
@@ -183,7 +203,9 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
                                         }`}
                                         onClick={() => {
                                             if (!notification.read_at) {
-                                                markAsRead(notification.id);
+                                                markAsReadMutation.mutate(
+                                                    notification.id,
+                                                );
                                             }
                                         }}
                                     >

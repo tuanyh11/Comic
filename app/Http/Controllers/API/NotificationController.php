@@ -15,7 +15,7 @@ class NotificationController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Get all notifications, with the newest first
         $notifications = $user->notifications()->orderBy('created_at', 'desc')->get();
         
@@ -30,7 +30,7 @@ class NotificationController extends Controller
             ]);
         }
         
-        return Inertia::render('Notifications/Index', [
+        return response()->json([
             'notifications' => $notifications,
             'unread_count' => $unreadCount
         ]);

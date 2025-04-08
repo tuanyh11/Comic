@@ -33,22 +33,25 @@ class PaymentResource extends Resource
             ->schema([
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Payment Information')
+                        Forms\Components\Section::make(__('Payment Information'))
                             ->schema([
                                 Forms\Components\Select::make('user_id')
                                     ->relationship('user', 'name')
                                     ->searchable()
                                     ->preload()
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('chapter_id')
                                     ->relationship('chapter', 'title')
                                     ->searchable()
                                     ->preload()
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('transaction_id')
                                     ->maxLength(255)
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('payment_method')
@@ -60,11 +63,13 @@ class PaymentResource extends Resource
                                         'momo' => 'MoMo',
                                         'zalopay' => 'ZaloPay',
                                     ])
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('amount')
                                     ->numeric()
                                     ->suffix('VND')
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('currency')
@@ -74,6 +79,7 @@ class PaymentResource extends Resource
                                         'EUR' => 'Euro (EUR)',
                                     ])
                                     ->default('VND')
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('status')
@@ -84,6 +90,7 @@ class PaymentResource extends Resource
                                         'refunded' => 'Refunded',
                                     ])
                                     ->default('completed')
+                                    ->translateLabel()
                                     ->required(),
                             ])->columns(2),
                     ])
@@ -91,11 +98,12 @@ class PaymentResource extends Resource
                 
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Metadata')
+                        Forms\Components\Section::make(__('Metadata'))
                             ->schema([
                                 Forms\Components\KeyValue::make('metadata')
                                     ->keyLabel('Key')
                                     ->valueLabel('Value')
+                                    ->translateLabel()
                                     ->columnSpanFull(),
                             ]),
                     ])
@@ -110,26 +118,32 @@ class PaymentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('chapter.title')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('transaction_id')
                     ->searchable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('payment_method')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('amount')
                     ->money('VND')
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
+                    ->translateLabel()
                     ->color(fn (string $state): string => match ($state) {
                         'completed' => 'success',
                         'pending' => 'warning',
@@ -140,10 +154,12 @@ class PaymentResource extends Resource
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -156,7 +172,8 @@ class PaymentResource extends Resource
                         'paypal' => 'PayPal',
                         'momo' => 'MoMo',
                         'zalopay' => 'ZaloPay',
-                    ]),
+                    ])
+                    ->translateLabel(),
                 
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -164,11 +181,13 @@ class PaymentResource extends Resource
                         'completed' => 'Completed',
                         'failed' => 'Failed',
                         'refunded' => 'Refunded',
-                    ]),
+                    ])
+                    ->translateLabel(),
                 
                 Tables\Filters\SelectFilter::make('user')
                     ->relationship('user', 'name')
                     ->searchable()
+                    ->translateLabel()
                     ->preload(),
             ])
             ->actions([

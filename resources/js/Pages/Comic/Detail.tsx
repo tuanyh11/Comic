@@ -6,6 +6,7 @@ import { FC, useState } from 'react';
 
 // Import the components
 import AuthorInfo from './Partials/AuthorInfo';
+import Breadcrumbs from './Partials/Breadcrumbs';
 import ChapterPreviewModal from './Partials/ChapterPreviewModal';
 import ChaptersList from './Partials/ChaptersList';
 import ComicCover from './Partials/ComicCover';
@@ -14,7 +15,6 @@ import ComicHeader from './Partials/ComicHeader';
 import ComicTags from './Partials/ComicTags';
 import InsufficientFundsModal from './Partials/InsufficientFundsModal';
 import PurchaseConfirmationModal from './Partials/PurchaseConfirmationModal';
-import Breadcrumbs from './Partials/Breadcrumbs';
 
 const Detail: FC<{ comic: Comic; walletBalance?: number }> = ({
     comic,

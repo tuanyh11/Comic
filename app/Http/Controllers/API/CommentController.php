@@ -47,7 +47,7 @@ class CommentController extends Controller
             ->with(['user' => function ($query) {
                 $query->select('id', 'name')->with('media');
             }])
-            ->orderBy('created_at', 'asc') // Show oldest replies first
+            ->orderBy('created_at', 'desc') // Show oldest replies first
             ->paginate(3); // Smaller page size for replies
 
         return response()->json($replies);
@@ -88,7 +88,6 @@ class CommentController extends Controller
             $originalUser = User::find($parentComment->user_id);
             // Don't notify if user is replying to their own comment
             if (Auth::id() !== $originalUser->id) {
-                // Send notification to the original commenter
                 $originalUser->notify(new CommentReplyNotification($comment));
             }
             event(new CommentEvent($comment, 'reply'));

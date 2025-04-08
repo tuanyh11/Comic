@@ -33,10 +33,12 @@ class StatusResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Status Information')
+                    ->translateLabel()
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
+                            ->translateLabel()
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn(Forms\Get $get, Forms\Set $set, ?string $state) =>
                             $set('slug', Str::slug($state))),
@@ -44,17 +46,21 @@ class StatusResource extends Resource
                         Forms\Components\TextInput::make('slug')
                             ->required()
                             ->maxLength(255)
+                            ->translateLabel()
                             ->unique(Status::class, 'slug', ignoreRecord: true),
 
                         Forms\Components\ColorPicker::make('color')
-                            ->required(),
+                            ->required()
+                            ->translateLabel(),
 
                         Forms\Components\Textarea::make('description')
-                            ->maxLength(65535),
+                            ->maxLength(65535)
+                            ->translateLabel(),
 
                         Forms\Components\Toggle::make('is_default')
                             ->label('Set as default status')
-                            ->helperText('Only one status can be set as default'),
+                            ->translateLabel()
+                            ->helperText(__('Only one status can be set as default')),
                     ])->columns(2),
             ]);
     }
@@ -65,30 +71,37 @@ class StatusResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('slug')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
 
-                Tables\Columns\ColorColumn::make('color'),
+                Tables\Columns\ColorColumn::make('color')
+                    ->translateLabel(),
 
                 Tables\Columns\IconColumn::make('is_default')
-                    ->boolean(),
+                    ->boolean()
+                    ->translateLabel(),
 
                 Tables\Columns\TextColumn::make('comics_count')
                     ->counts('comics')
                     ->label('Comics')
+                    ->translateLabel()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

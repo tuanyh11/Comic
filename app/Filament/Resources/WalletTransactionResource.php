@@ -22,9 +22,6 @@ class WalletTransactionResource extends Resource
     
     protected static ?int $navigationSort = 3;
     
-    protected static ?string $modelLabel = 'Wallet Transaction';
-    
-    protected static ?string $pluralModelLabel = 'Wallet Transactions';
 
     protected static function getLabelName(): string
     {
@@ -37,23 +34,27 @@ class WalletTransactionResource extends Resource
             ->schema([
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Transaction Information')
+                        Forms\Components\Section::make(__('Information'))
+                            ->translateLabel()
                             ->schema([
                                 Forms\Components\Select::make('wallet_id')
                                     ->relationship('wallet', 'id', fn ($query) => $query->with('user'))
                                     ->getOptionLabelFromRecordUsing(fn ($record) => "ID: {$record->id} - User: {$record->user->name}")
                                     ->searchable()
                                     ->preload()
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('user_id')
                                     ->relationship('user', 'name')
                                     ->searchable()
                                     ->preload()
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('transaction_id')
                                     ->maxLength(255)
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Select::make('type')
@@ -64,25 +65,30 @@ class WalletTransactionResource extends Resource
                                         'refund' => 'Refund',
                                         'transfer' => 'Transfer',
                                     ])
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('amount')
                                     ->numeric()
                                     ->suffix('VND')
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('balance_before')
                                     ->numeric()
                                     ->suffix('VND')
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\TextInput::make('balance_after')
                                     ->numeric()
                                     ->suffix('VND')
+                                    ->translateLabel()
                                     ->required(),
                                 
                                 Forms\Components\Textarea::make('description')
                                     ->maxLength(65535)
+                                    ->translateLabel()
                                     ->columnSpanFull(),
                                 
                                 Forms\Components\Select::make('status')
@@ -93,6 +99,7 @@ class WalletTransactionResource extends Resource
                                         'cancelled' => 'Cancelled',
                                     ])
                                     ->default('completed')
+                                    ->translateLabel()
                                     ->required(),
                             ])->columns(2),
                     ])
@@ -100,11 +107,13 @@ class WalletTransactionResource extends Resource
                 
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Metadata')
+                        Forms\Components\Section::make(__('Metadata'))
+                            ->translateLabel()
                             ->schema([
                                 Forms\Components\KeyValue::make('metadata')
                                     ->keyLabel('Key')
                                     ->valueLabel('Value')
+                                    ->translateLabel()
                                     ->columnSpanFull(),
                             ]),
                     ])
@@ -119,14 +128,17 @@ class WalletTransactionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('transaction_id')
                     ->searchable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
+                    ->translateLabel()
                     ->color(fn (string $state): string => match ($state) {
                         'deposit' => 'success',
                         'withdrawal' => 'warning',
@@ -138,20 +150,24 @@ class WalletTransactionResource extends Resource
                 
                 Tables\Columns\TextColumn::make('amount')
                     ->money('VND')
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('balance_before')
                     ->money('VND')
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('balance_after')
                     ->money('VND')
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
+                    ->translateLabel()
                     ->color(fn (string $state): string => match ($state) {
                         'completed' => 'success',
                         'pending' => 'warning',
@@ -162,14 +178,17 @@ class WalletTransactionResource extends Resource
                 
                 Tables\Columns\TextColumn::make('description')
                     ->limit(30)
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -181,7 +200,8 @@ class WalletTransactionResource extends Resource
                         'purchase' => 'Purchase',
                         'refund' => 'Refund',
                         'transfer' => 'Transfer',
-                    ]),
+                    ])
+                    ->translateLabel(),
                 
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
@@ -189,11 +209,13 @@ class WalletTransactionResource extends Resource
                         'completed' => 'Completed',
                         'failed' => 'Failed',
                         'cancelled' => 'Cancelled',
-                    ]),
+                    ])
+                    ->translateLabel(),
                 
                 Tables\Filters\SelectFilter::make('user')
                     ->relationship('user', 'name')
                     ->searchable()
+                    ->translateLabel()
                     ->preload(),
             ])
             ->actions([

@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Resources\MediaResource;
 use App\Models\Media;
 
 return [
@@ -55,7 +56,7 @@ return [
         'navigation_icon' => 'heroicon-o-photo',
         'navigation_sort' => null,
         'navigation_count_badge' => false,
-        'resource' => \Awcodes\Curator\Resources\MediaResource::class,
+        'resource' => MediaResource::class,
     ],
     'should_preserve_filenames' => false,
     'should_register_navigation' => true,

@@ -22,7 +22,7 @@ class PurchasedChapterResource extends Resource
     
     protected static ?int $navigationSort = 4;
     
-    protected static ?string $pluralModelLabel = 'Purchased Chapters';
+    // protected static ?string $pluralModelLabel = 'Purchased Chapters';
 
     protected static function getLabelName(): string
     {
@@ -37,21 +37,25 @@ class PurchasedChapterResource extends Resource
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
+                    ->translateLabel()
                     ->required(),
                 
                 Forms\Components\Select::make('chapter_id')
                     ->relationship('chapter', 'title')
                     ->searchable()
                     ->preload()
+                    ->translateLabel()
                     ->required(),
                 
                 Forms\Components\TextInput::make('price_paid')
                     ->numeric()
                     ->suffix('VND')
+                    ->translateLabel()
                     ->required(),
                 
                 Forms\Components\TextInput::make('payment_id')
                     ->maxLength(255)
+                    ->translateLabel()
                     ->required(),
             ]);
     }
@@ -62,31 +66,38 @@ class PurchasedChapterResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('chapter.comic.title')
                     ->label('Comic')
+                    ->translateLabel()
                     ->searchable()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('chapter.title')
                     ->searchable()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('price_paid')
                     ->money('VND')
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('payment_id')
                     ->searchable()
+                    ->translateLabel()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->translateLabel()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -94,18 +105,22 @@ class PurchasedChapterResource extends Resource
                 Tables\Filters\SelectFilter::make('user')
                     ->relationship('user', 'name')
                     ->searchable()
+                    ->translateLabel()
                     ->preload(),
                 
                 Tables\Filters\SelectFilter::make('chapter')
                     ->relationship('chapter.comic', 'title')
                     ->label('Comic')
+                    ->translateLabel()
                     ->searchable()
                     ->preload(),
                 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from'),
-                        Forms\Components\DatePicker::make('created_until'),
+                        Forms\Components\DatePicker::make('created_from')
+                            ->translateLabel(),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->translateLabel(),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
@@ -117,7 +132,8 @@ class PurchasedChapterResource extends Resource
                                 $data['created_until'] ?? null,
                                 fn ($query, $date) => $query->whereDate('created_at', '<=', $date)
                             );
-                    }),
+                    })
+                    ->translateLabel(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

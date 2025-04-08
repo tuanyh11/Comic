@@ -1,343 +1,323 @@
 import { Chapter, Comment, LaravelPagination, User } from '@/types/custom';
-import axios from 'axios';
+import {
+    InfiniteData,
+    useInfiniteQuery,
+    useMutation,
+    useQueryClient,
+} from '@tanstack/react-query';
+import axios, { AxiosResponse } from 'axios';
 import Pusher from 'pusher-js';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
-// Type for mapping comment IDs to their pagination data
+// Types
 type ReplyPaginationsMap = Record<number, LaravelPagination<Comment>>;
+interface CommentsResponse {
+    comment: Comment;
+    message: string;
+}
+type CommentsInfiniteData = InfiniteData<LaravelPagination<Comment>>;
 
 const useChapterComments = (chapter: Chapter, currentUser: User) => {
+    // State
     const [showComments, setShowComments] = useState(false);
-    const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const commentListRef = useRef<HTMLDivElement>(null);
-    const [commentPagination, setCommentPagination] =
-        useState<LaravelPagination<Comment> | null>(null);
     const [replyPaginations, setReplyPaginations] =
         useState<ReplyPaginationsMap>({});
-    const [currentPage, setCurrentPage] = useState(1);
+    const commentListRef = useRef<HTMLDivElement>(null);
+    const pusherRef = useRef<Pusher | null>(null);
+    const queryClient = useQueryClient();
+    const commentsQueryKey = ['comments', chapter.id] as const;
 
-    // Keep track of all comments that should always have visible replies
-    // This is a simple solution that ALWAYS shows replies - they're never closed
-    const [alwaysShowReplies, setAlwaysShowReplies] = useState(true);
-
-    // Initialize Pusher
-    useEffect(() => {
-        const pusher = new Pusher(
-            import.meta.env.VITE_PUSHER_APP_KEY || 'a53de8327fa510a204f6',
-            {
-                cluster: 'ap1',
-                authEndpoint: '/broadcasting/auth',
-            },
-        );
-
-        // Subscribe to the chapter-specific channel
-        const chapterChannel = pusher.subscribe(
-            `private-chapter.${chapter.id}`,
-        );
-
-        // Subscribe to the user's personal channel for receiving replies
-        const userChannel = pusher.subscribe(`private-user.${currentUser.id}`);
-
-        // Listen for new comments on chapter channel
-        chapterChannel.bind(
-            'comment.activity',
-            (data: { comment: Comment; action: string; timestamp: string }) => {
-                console.log('Activity on chapter channel:', data);
-                if (data.action === 'new') {
-                    setComments((prevComments) => [
-                        data.comment,
-                        ...prevComments,
-                    ]);
-
-                    // Update total count in pagination
-                    if (commentPagination) {
-                        setCommentPagination({
-                            ...commentPagination,
-                            total: commentPagination.total + 1,
-                        });
-                    }
-
-                    // Scroll to top of comment list where new comment appears
-                    if (commentListRef.current) {
-                        commentListRef.current.scrollTop = 0;
-                    }
-                }
-                if (data.action === 'reply') {
-                    // Handle case where reply event is sent to chapter channel
-                    handleNewReply(data.comment);
-                }
-            },
-        );
-
-        // Listen for replies to your comments on user channel
-        userChannel.bind(
-            'comment.activity',
-            (data: { comment: Comment; action: string; timestamp: string }) => {
-                console.log('Activity on user channel:', data);
-
-                if (data.action === 'reply') {
-                    handleNewReply(data.comment);
-                }
-            },
-        );
-
-        // Function to handle new replies from either channel
-        const handleNewReply = (comment: Comment) => {
-            if (!comment.parent_id) return;
-
-            console.log('====================================');
-            console.log(comment);
-            console.log('====================================');
-            // Check if parent comment exists in our state
-            const parentExists = comments.some(
-                (c) => c.id === comment.parent_id,
-            );
-
-            // Check if this reply already exists in our state
-            const replyExists = comments.some((c) => c.id === comment.id);
-
-            if (replyExists) {
-                console.log('Reply already exists in state, skipping');
-                return;
-            }
-
-            if (parentExists) {
-                // If we've loaded the parent comment, add this reply
-                setComments((prevComments) => {
-                    // Find the index where to insert the reply (after the parent or after last sibling)
-                    const parentIndex = prevComments.findIndex(
-                        (c) => c.id === comment.parent_id,
-                    );
-
-                    if (parentIndex === -1) return [...prevComments, comment];
-
-                    // Find the last reply to this parent
-                    let insertIndex = parentIndex;
-                    for (
-                        let i = parentIndex + 1;
-                        i < prevComments.length;
-                        i++
-                    ) {
-                        if (prevComments[i].parent_id === comment.parent_id) {
-                            insertIndex = i;
-                        } else if (!prevComments[i].parent_id) {
-                            // We've reached a new parent comment, stop here
-                            break;
-                        }
-                    }
-
-                    // Create a new array with the reply inserted at the right position
-                    const result = [
-                        ...prevComments.slice(0, insertIndex + 1),
-                        comment,
-                        ...prevComments.slice(insertIndex + 1),
-                    ];
-
-                    return result;
-                });
-
-                if (replyPaginations[comment.parent_id]) {
-                    setReplyPaginations((prev) => ({
-                        ...prev,
-                        [String(comment.parent_id)]: {
-                            ...prev[comment.parent_id!],
-                            total: prev[comment.parent_id!].total + 1,
-                            data: [...prev[comment.parent_id!].data, comment],
-                        },
-                    }));
-                }
-            } else {
-                // IMPORTANT: Instead of fetching all replies for the parent,
-                // we'll just fetch the parent comment itself and add this reply
-                // This prevents replies from being re-fetched and collapsed
-                fetchParentOnly(comment.parent_id, comment);
-            }
-        };
-
-        // Fetch initial comments
-        fetchComments(1);
-
-        return () => {
-            // Cleanup
-            pusher.unsubscribe(`private-chapter.${chapter.id}`);
-            pusher.unsubscribe(`private-user.${currentUser.id}`);
-        };
-    }, [chapter.id, currentUser.id]);
-
-    // Fetch a parent comment and its replies
-    const fetchParentWithReplies = async (parentId: number) => {
-        try {
-            // First fetch the parent comment
-            const parentResponse = await axios.get(
-                route('comments.get', { comment_id: parentId }),
-            );
-
-            // Then fetch its replies
-            const repliesResponse = await axios.get<LaravelPagination<Comment>>(
-                route('comments.replies', {
-                    comment_id: parentId,
-                    page: 1,
-                }),
-            );
-
-            const parentComment = parentResponse.data;
-            const repliesData = repliesResponse.data;
-
-            // Add parent and replies to state
-            setComments((prev) => {
-                // First check if parent already exists
-                if (prev.some((c) => c.id === parentId)) {
-                    return prev;
-                }
-
-                // Add parent and all replies
-                return [...prev, parentComment, ...repliesData.data];
-            });
-
-            // Store pagination data
-            setReplyPaginations((prev) => ({
-                ...prev,
-                [parentId]: repliesData,
-            }));
-        } catch (error) {
-            console.error('Error fetching parent comment and replies:', error);
-        }
-    };
-
-    // Fetch ONLY the parent comment and add a single reply
-    // This prevents re-fetching all replies which might cause them to collapse
-    const fetchParentOnly = async (parentId: number, replyComment: Comment) => {
-        try {
-            // Fetch only the parent comment
-            const parentResponse = await axios.get(
-                route('comments.get', { comment_id: parentId }),
-            );
-
-            const parentComment = parentResponse.data;
-
-            // Add parent and the single reply to state
-            setComments((prev) => {
-                // First check if parent already exists
-                if (prev.some((c) => c.id === parentId)) {
-                    // If parent exists but we're here, it means we need to add the reply
-                    if (!prev.some((c) => c.id === replyComment.id)) {
-                        // Find the right position to insert the reply
-                        const parentIndex = prev.findIndex(
-                            (c) => c.id === parentId,
-                        );
-                        if (parentIndex !== -1) {
-                            let insertIndex = parentIndex;
-                            for (
-                                let i = parentIndex + 1;
-                                i < prev.length;
-                                i++
-                            ) {
-                                if (prev[i].parent_id === parentId) {
-                                    insertIndex = i;
-                                } else if (!prev[i].parent_id) {
-                                    break;
-                                }
-                            }
-                            return [
-                                ...prev.slice(0, insertIndex + 1),
-                                replyComment,
-                                ...prev.slice(insertIndex + 1),
-                            ];
-                        }
-                    }
-                    return prev;
-                }
-
-                // Add parent and only this single reply
-                return [...prev, parentComment, replyComment];
-            });
-
-            // Update pagination data if it exists
-            if (replyPaginations[parentId]) {
-                setReplyPaginations((prev) => ({
-                    ...prev,
-                    [parentId]: {
-                        ...prev[parentId],
-                        total: prev[parentId].total + 1,
-                        data: [...prev[parentId].data, replyComment],
-                    },
-                }));
-            } else {
-                // Create new pagination data with just this reply
-                setReplyPaginations((prev) => ({
-                    ...prev,
-                    [parentId]: {
-                        current_page: 1,
-                        data: [replyComment],
-                        first_page_url: '',
-                        from: 1,
-                        last_page: 1,
-                        last_page_url: '',
-                        links: [],
-                        next_page_url: null,
-                        path: '',
-                        per_page: 10,
-                        prev_page_url: null,
-                        to: 1,
-                        total: 1,
-                    },
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching parent comment:', error);
-        }
-    };
-
+    // ==================== UI Actions ====================
     const toggleComments = () => {
         setShowComments(!showComments);
-        if (!showComments && comments.length === 0) {
-            fetchComments(1);
+
+        // Scroll to top when opening comments
+        const shouldScrollToTop = !showComments && commentListRef.current;
+        if (shouldScrollToTop) {
+            setTimeout(() => {
+                if (commentListRef.current) {
+                    commentListRef.current.scrollTop = 0;
+                }
+            }, 100);
         }
     };
 
-    // Fetch comments with pagination
-    const fetchComments = async (page = 1) => {
+    // ==================== Data Fetching ====================
+    const {
+        data: commentPagination,
+        fetchNextPage,
+        hasNextPage,
+        isFetching: isLoading,
+    } = useInfiniteQuery({
+        queryKey: commentsQueryKey,
+        queryFn: fetchCommentsPage,
+        getNextPageParam: getNextCommentsPage,
+        enabled: showComments,
+        initialPageParam: 1,
+        refetchOnWindowFocus: false,
+        staleTime: 10000,
+    });
+
+    // Get flattened comments
+    const comments =
+        commentPagination?.pages?.flatMap((page) => page.data) || [];
+
+    // ==================== Mutations ====================
+    const addCommentMutation = useMutation({
+        mutationFn: createComment,
+        onSuccess: handleCommentSuccess,
+        onError: () => toast.error('Failed to add comment'),
+    });
+
+    const addReplyMutation = useMutation({
+        mutationFn: createReply,
+        onSuccess: handleReplySuccess,
+        onError: () => toast.error('Failed to add reply'),
+    });
+
+    // ==================== User Interactions ====================
+    const addComment = () =>
+        newComment.trim() &&
+        !addCommentMutation.isPending &&
+        addCommentMutation.mutate(newComment);
+
+    const addReply = (commentId: number, content: string) =>
+        content.trim() &&
+        !addReplyMutation.isPending &&
+        addReplyMutation.mutate({ commentId, content });
+
+    const loadMoreComments = () => hasNextPage && !isLoading && fetchNextPage();
+
+    const loadMoreReplies = (commentId: number, page: number) => {
+        fetchReplies(commentId, page);
+    };
+
+    // ==================== Fetching Functions ====================
+    // Higher-order function để xử lý try-catch
+    const withErrorHandling = async <T>(
+        fn: () => Promise<T>,
+        errorMessage: string,
+    ): Promise<T> => {
         try {
+            return await fn();
+        } catch (error) {
+            toast.error(errorMessage);
+            throw error;
+        }
+    };
+
+    async function fetchCommentsPage({
+        pageParam = 1,
+    }: {
+        pageParam?: number;
+    }) {
+        return withErrorHandling(async () => {
             const response = await axios.get<LaravelPagination<Comment>>(
                 route('chapter.comments', {
                     chapter_id: chapter.id,
-                    page: page,
+                    page: pageParam,
                 }),
             );
+            return response.data;
+        }, 'Failed to load comments');
+    }
 
-            const data = response.data;
+    function getNextCommentsPage(lastPage: LaravelPagination<Comment>) {
+        const hasNextPage = lastPage.current_page < lastPage.last_page;
+        return hasNextPage ? lastPage.current_page + 1 : undefined;
+    }
 
-            if (page === 1) {
-                setComments(data.data);
-            } else {
-                // Append new comments to existing ones
-                setComments((prevComments) => [...prevComments, ...data.data]);
+    // ==================== Comment Creation ====================
+    async function createComment(content: string) {
+        return axios.post<CommentsResponse>(
+            route('chapter.comment.store', { chapter_id: chapter.id }),
+            { content, chapter_id: chapter.id, parent_id: null },
+        );
+    }
+
+    function handleCommentSuccess(response: AxiosResponse<CommentsResponse>) {
+        setNewComment('');
+        const newComment = response.data.comment;
+        if (newComment) {
+            handleNewComment(newComment);
+        }
+    }
+
+    // ==================== Reply Creation ====================
+    async function createReply({
+        commentId,
+        content,
+    }: {
+        commentId: number;
+        content: string;
+    }) {
+        return axios.post<CommentsResponse>(
+            route('chapter.comment.store', { chapter_id: chapter.id }),
+            { content, chapter_id: chapter.id, parent_id: commentId },
+        );
+    }
+
+    function handleReplySuccess(response: AxiosResponse<CommentsResponse>) {
+        const newReply = response.data.comment;
+        if (!newReply?.parent_id) {
+            return;
+        }
+
+        const parentId = newReply.parent_id;
+        const repliesLoaded = Boolean(replyPaginations[parentId]);
+
+        if (repliesLoaded) {
+            addReplyToLoadedParent(newReply);
+        } else {
+            fetchReplies(parentId, 1);
+        }
+    }
+
+    // ==================== Comment Management ====================
+    const handleNewComment = (comment: Comment) => {
+        // Cập nhật query cache
+        queryClient.setQueryData<CommentsInfiniteData | undefined>(
+            commentsQueryKey,
+            (oldData) =>
+                !oldData
+                    ? oldData
+                    : {
+                          ...oldData,
+                          pages: [
+                              {
+                                  ...oldData.pages[0],
+                                  data: [comment, ...oldData.pages[0].data],
+                                  total: oldData.pages[0].total + 1,
+                              },
+                              ...oldData.pages.slice(1),
+                          ],
+                      },
+        );
+
+        // Scroll to top after adding new comment
+        commentListRef.current && (commentListRef.current.scrollTop = 0);
+    };
+
+    const handleNewReply = (comment: Comment) => {
+        // Early return nếu không có parent_id
+        if (!comment.parent_id) return;
+
+        const parentId = comment.parent_id;
+        const parentExists = comments.some((c) => c.id === parentId);
+
+        // Sử dụng toán tử logic thay thế if/else
+        !parentExists
+            ? fetchParentAndReply(parentId, comment)
+            : !replyPaginations[parentId]
+              ? fetchReplies(parentId, 1)
+              : !replyPaginations[parentId].data.some(
+                    (r) => r.id === comment.id,
+                ) && addReplyToLoadedParent(comment);
+    };
+
+    const addReplyToLoadedParent = (reply: Comment) => {
+        if (!reply.parent_id) {
+            return;
+        }
+
+        const replyExists = comments.some((c) => c.id === reply.id);
+        if (replyExists) {
+            return;
+        }
+
+        updateReplyPaginationState(reply);
+        updateQueryCacheWithReply(reply);
+    };
+
+    // ==================== Helper Functions ====================
+    const createInitialPagination = (
+        data: Comment[],
+    ): LaravelPagination<Comment> => ({
+        current_page: 1,
+        data,
+        first_page_url: '',
+        from: 1,
+        last_page: 1,
+        last_page_url: '',
+        links: [],
+        next_page_url: null,
+        path: '',
+        per_page: 3,
+        prev_page_url: null,
+        to: data.length,
+        total: data.length,
+    });
+
+    const updateReplyPaginationState = (reply: Comment) => {
+        if (!reply.parent_id) {
+            return;
+        }
+
+        const parentId = reply.parent_id;
+
+        setReplyPaginations((prev) => {
+            const hasExistingPagination = Boolean(prev[parentId]);
+
+            if (!hasExistingPagination) {
+                return {
+                    ...prev,
+                    [parentId]: createInitialPagination([reply]),
+                };
             }
 
-            // Store pagination data
-            setCommentPagination(data);
-            setCurrentPage(data.current_page);
-        } catch (error) {
-            toast.error('Failed to load comments');
-            console.error('Error fetching comments:', error);
-        }
+            return {
+                ...prev,
+                [parentId]: {
+                    ...prev[parentId],
+                    total: prev[parentId].total + 1,
+                    data: [...prev[parentId].data, reply],
+                },
+            };
+        });
     };
 
-    // Load more comments (parent comments)
-    const loadMoreComments = async () => {
-        if (commentPagination && currentPage < commentPagination.last_page) {
-            const nextPage = currentPage + 1;
-            await fetchComments(nextPage);
-        }
+    const updateQueryCacheWithReply = (reply: Comment) => {
+        // Early return nếu không có parent_id
+        if (!reply.parent_id) return;
+
+        queryClient.setQueryData<CommentsInfiniteData | undefined>(
+            commentsQueryKey,
+            (oldData) => {
+                // Early returns
+                if (!oldData) return oldData;
+
+                const parentId = reply.parent_id!;
+                const pageWithParent = oldData.pages.findIndex((page) =>
+                    page.data.some((c) => c.id === parentId),
+                );
+
+                if (pageWithParent === -1) return oldData;
+
+                // Tạo pages mới
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page, pageIndex) =>
+                        pageIndex !== pageWithParent
+                            ? page
+                            : (() => {
+                                  const parentIndex = page.data.findIndex(
+                                      (c) => c.id === parentId,
+                                  );
+                                  const newData = [...page.data];
+                                  newData.splice(parentIndex + 1, 0, reply);
+                                  return { ...page, data: newData };
+                              })(),
+                    ),
+                };
+            },
+        );
     };
 
-    // Fetch replies for a specific comment
+    // ==================== Replies Management ====================
     const fetchReplies = async (commentId: number, page = 1) => {
-        try {
-            setIsSubmitting(true);
+        return withErrorHandling(async () => {
             const response = await axios.get<LaravelPagination<Comment>>(
                 route('comments.replies', {
                     comment_id: commentId,
@@ -346,168 +326,259 @@ const useChapterComments = (chapter: Chapter, currentUser: User) => {
             );
 
             const data = response.data;
-
-            // Update replies in the comments state
-            setComments((prevComments) => {
-                if (page === 1) {
-                    // For first page, remove any existing replies for this parent
-                    const withoutExistingReplies = prevComments.filter(
-                        (comment) => comment.parent_id !== commentId,
-                    );
-                    return [...withoutExistingReplies, ...data.data];
-                } else {
-                    // For subsequent pages, add new replies but avoid duplicates
-                    const existingIds = new Set(
-                        prevComments.map((comment) => comment.id),
-                    );
-                    const newReplies = data.data.filter(
-                        (reply) => !existingIds.has(reply.id),
-                    );
-                    return [...prevComments, ...newReplies];
-                }
-            });
-
-            // Store pagination data for this parent comment
             setReplyPaginations((prev) => ({
                 ...prev,
                 [commentId]: data,
             }));
-        } catch (error) {
-            toast.error('Failed to load replies');
-            console.error('Error fetching replies:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+
+            updateQueryCacheWithReplies(commentId, data, page);
+            return data;
+        }, 'Failed to load replies');
     };
 
-    // Load more replies for a specific comment
-    const loadMoreReplies = (commentId: number, page: number) => {
-        fetchReplies(commentId, page);
-    };
-
-    // Add comment using axios
-    const addComment = async () => {
-        if (newComment.trim() && !isSubmitting) {
-            setIsSubmitting(true);
-
-            try {
-                await axios.post(
-                    route('chapter.comment.store', { chapter_id: chapter.id }),
-                    {
-                        content: newComment,
-                        chapter_id: chapter.id,
-                        parent_id: null,
-                    },
-                );
-
-                setNewComment('');
-                // Comment will be added via Pusher
-            } catch (error) {
-                console.error('Failed to add comment:', error);
-                toast.error('Failed to add comment');
-            } finally {
-                setIsSubmitting(false);
-            }
-        }
-    };
-
-    // Add reply using axios
-    const addReply = async (commentId: number, replyText: string) => {
-        if (replyText.trim() && !isSubmitting) {
-            setIsSubmitting(true);
-
-            try {
-                const response = await axios.post(
-                    route('chapter.comment.store', { chapter_id: chapter.id }),
-                    {
-                        content: replyText,
-                        chapter_id: chapter.id,
-                        parent_id: commentId,
-                    },
-                );
-
-                // Instead of waiting for Pusher events, manually add the reply to the state
-                const newReply = response.data;
-
-                if (newReply) {
-                    // Add the new reply to the comments array directly
-                    setComments((prevComments) => {
-                        // Find parent comment's position
-                        const parentIndex = prevComments.findIndex(
-                            (c) => c.id === commentId,
-                        );
-
-                        if (parentIndex === -1)
-                            return [...prevComments, newReply];
-
-                        // Find last reply to this parent to insert after it
-                        let insertIndex = parentIndex;
-                        for (
-                            let i = parentIndex + 1;
-                            i < prevComments.length;
-                            i++
-                        ) {
-                            if (prevComments[i].parent_id === commentId) {
-                                insertIndex = i;
-                            } else if (!prevComments[i].parent_id) {
-                                break;
-                            }
-                        }
-
-                        // Insert new reply at the right position
-                        return [
-                            ...prevComments.slice(0, insertIndex + 1),
-                            newReply,
-                            ...prevComments.slice(insertIndex + 1),
-                        ];
-                    });
-
-                    // Update pagination data if it exists
-                    if (replyPaginations[commentId]) {
-                        setReplyPaginations((prev) => ({
-                            ...prev,
-                            [commentId]: {
-                                ...prev[commentId],
-                                total: prev[commentId].total + 1,
-                                data: [...prev[commentId].data, newReply],
-                            },
-                        }));
-                    }
+    const updateQueryCacheWithReplies = (
+        parentId: number,
+        data: LaravelPagination<Comment>,
+        page: number,
+    ) => {
+        queryClient.setQueryData<CommentsInfiniteData | undefined>(
+            commentsQueryKey,
+            (oldData) => {
+                if (!oldData) {
+                    return oldData;
                 }
 
-                // Do NOT fetch replies here - this is the key change
-                // We'll let Pusher handle any additional updates
-            } catch (error) {
-                console.error('Failed to add reply:', error);
-                toast.error('Failed to add reply');
-            } finally {
-                setIsSubmitting(false);
-            }
-        }
+                const isFirstPage = page === 1;
+
+                if (isFirstPage) {
+                    return updateFirstPageReplies(oldData, parentId, data);
+                }
+
+                return appendNewReplies(oldData, data);
+            },
+        );
     };
 
-    // Function to check if replies should be shown - always returns true
-    // This ensures replies are always visible and never hidden
-    const shouldShowReplies = () => {
-        return alwaysShowReplies;
+    const updateFirstPageReplies = (
+        oldData: CommentsInfiniteData,
+        parentId: number,
+        repliesData: LaravelPagination<Comment>,
+    ) => {
+        const newComments = [...comments];
+        const withoutExistingReplies = newComments.filter(
+            (comment) => comment.parent_id !== parentId,
+        );
+
+        const parentIndex = newComments.findIndex((c) => c.id === parentId);
+        if (parentIndex === -1) {
+            return updateWithoutParent(
+                oldData,
+                withoutExistingReplies,
+                repliesData,
+            );
+        }
+
+        // Sắp xếp replies theo thứ tự mới nhất lên đầu
+        const sortedReplies = [...repliesData.data].reverse();
+
+        return {
+            ...oldData,
+            pages: oldData.pages.map((page, i) => {
+                if (i === 0) {
+                    return {
+                        ...page,
+                        data: [
+                            ...withoutExistingReplies.slice(0, parentIndex + 1),
+                            ...sortedReplies,
+                            ...withoutExistingReplies.slice(parentIndex + 1),
+                        ],
+                    };
+                }
+                return page;
+            }),
+        };
     };
+
+    const updateWithoutParent = (
+        oldData: CommentsInfiniteData,
+        withoutExistingReplies: Comment[],
+        repliesData: LaravelPagination<Comment>,
+    ) => {
+        return {
+            ...oldData,
+            pages: oldData.pages.map((page, i) => {
+                if (i === 0) {
+                    return {
+                        ...page,
+                        data: [...withoutExistingReplies, ...repliesData.data],
+                    };
+                }
+                return page;
+            }),
+        };
+    };
+
+    const appendNewReplies = (
+        oldData: CommentsInfiniteData,
+        repliesData: LaravelPagination<Comment>,
+    ) => {
+        const existingIds = new Set(comments.map((comment) => comment.id));
+        const newReplies = repliesData.data.filter(
+            (reply) => !existingIds.has(reply.id),
+        );
+
+        return {
+            ...oldData,
+            pages: oldData.pages.map((page, i) => {
+                if (i === 0) {
+                    return {
+                        ...page,
+                        data: [...page.data, ...newReplies],
+                    };
+                }
+                return page;
+            }),
+        };
+    };
+
+    const fetchParentAndReply = async (
+        parentId: number,
+        replyComment: Comment,
+    ) => {
+        return withErrorHandling(async () => {
+            const response = await axios.get<Comment>(
+                route('comments.get', { comment_id: parentId }),
+            );
+            const parentComment = response.data;
+
+            updateCacheWithParentAndReply(parentComment, replyComment);
+            updateReplyPaginationState(replyComment);
+
+            return parentComment;
+        }, 'Error fetching parent comment').catch((err) =>
+            console.error('Error fetching parent comment:', err),
+        );
+    };
+
+    const updateCacheWithParentAndReply = (
+        parentComment: Comment,
+        replyComment: Comment,
+    ) => {
+        queryClient.setQueryData<CommentsInfiniteData | undefined>(
+            commentsQueryKey,
+            (oldData) =>
+                !oldData
+                    ? oldData
+                    : (() => {
+                          const lastPage = {
+                              ...oldData.pages[oldData.pages.length - 1],
+                          };
+                          const parentExists = lastPage.data.some(
+                              (c) => c.id === parentComment.id,
+                          );
+
+                          // Sử dụng toán tử ba ngôi thay vì if-else
+                          lastPage.data = parentExists
+                              ? [...lastPage.data, replyComment]
+                              : [...lastPage.data, parentComment, replyComment];
+
+                          return {
+                              ...oldData,
+                              pages: [...oldData.pages.slice(0, -1), lastPage],
+                          };
+                      })(),
+        );
+    };
+
+    // ==================== Pusher Setup ====================
+    useEffect(() => {
+        if (showComments) {
+            setupPusher();
+        }
+        return () => {
+            cleanupPusher();
+        };
+    }, [chapter.id, currentUser.id, showComments]);
+
+    const setupPusher = () => {
+        // Khởi tạo Pusher
+        pusherRef.current = new Pusher(
+            import.meta.env.VITE_PUSHER_APP_KEY || 'a53de8327fa510a204f6',
+            {
+                cluster: 'ap1',
+                authEndpoint: '/broadcasting/auth',
+            },
+        );
+
+        // Setup channels và event handlers
+        pusherRef.current && subscribeToChannels();
+        pusherRef.current && setupEventHandlers();
+    };
+
+    const subscribeToChannels = () =>
+        pusherRef.current && [
+            pusherRef.current.subscribe(`private-chapter.${chapter.id}`),
+            pusherRef.current.subscribe(`private-user.${currentUser.id}`),
+        ];
+
+    const setupEventHandlers = () => {
+        if (!pusherRef.current) return;
+
+        const chapterChannel = pusherRef.current.channel(
+            `private-chapter.${chapter.id}`,
+        );
+        const userChannel = pusherRef.current.channel(
+            `private-user.${currentUser.id}`,
+        );
+
+        // Bind events
+        chapterChannel?.bind('comment.activity', handleChapterActivity);
+        userChannel?.bind('comment.activity', handleUserActivity);
+    };
+
+    const handleChapterActivity = (data: {
+        comment: Comment;
+        action: string;
+        timestamp: string;
+    }) =>
+        data.action === 'new'
+            ? handleNewComment(data.comment)
+            : data.action === 'reply' && handleNewReply(data.comment);
+
+    const handleUserActivity = (data: {
+        comment: Comment;
+        action: string;
+        timestamp: string;
+    }) => data.action === 'reply' && handleNewReply(data.comment);
+
+    const cleanupPusher = () =>
+        pusherRef.current && [
+            pusherRef.current.unsubscribe(`private-chapter.${chapter.id}`),
+            pusherRef.current.unsubscribe(`private-user.${currentUser.id}`),
+            pusherRef.current.disconnect(),
+        ];
+
+    // ==================== Return Values ====================
 
     return {
         showComments,
         comments,
         newComment,
         setNewComment,
-        isSubmitting,
+        isSubmitting:
+            addCommentMutation.isPending ||
+            addReplyMutation.isPending ||
+            isLoading,
         commentListRef,
         toggleComments,
         addComment,
         addReply,
         loadMoreComments,
         loadMoreReplies,
-        commentPagination,
+        commentPagination:
+            commentPagination?.pages?.[commentPagination.pages.length - 1],
         replyPaginations,
-        shouldShowReplies, // Add this to your component interface
-        setAlwaysShowReplies, // This can be used to toggle all replies on/off if needed
+        hasMoreComments: hasNextPage,
     };
 };
 
