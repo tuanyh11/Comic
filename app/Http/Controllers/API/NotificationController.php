@@ -11,24 +11,32 @@ class NotificationController extends Controller
 {
     /**
      * Get user notifications
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-
-        // Get all notifications, with the newest first
-        $notifications = $user->notifications()->orderBy('created_at', 'desc')->get();
         
-        // Count unread notifications
-        $unreadCount = $user->unreadNotifications()->count();
-        
-        info('Notifications retrieved', ['user_id' => $user->id, 'unread_count' => $unreadCount]);
-        if (request()->wantsJson()) {
-            return response()->json([
-                'notifications' => $notifications,
-                'unread_count' => $unreadCount
-            ]);
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
         }
+
+        // Base query for notifications
+        $query = $user->notifications()->orderBy('created_at', 'desc');
+        
+        // Apply limit if requested (for preview mode)
+        if ($request->has('limit') && !$request->has('all')) {
+            $limit = (int) $request->input('limit', 5);
+            $query->limit($limit);
+        }
+        
+        // Get notifications
+        $notifications = $query->get();
+        
+        // Count unread notifications (always get total regardless of limit)
+        $unreadCount = $user->unreadNotifications()->count();
         
         return response()->json([
             'notifications' => $notifications,
@@ -38,41 +46,43 @@ class NotificationController extends Controller
     
     /**
      * Mark a notification as read
+     * 
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function markAsRead($id)
     {
         $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+        
         $notification = $user->notifications()->where('id', $id)->first();
         
         if ($notification) {
             $notification->markAsRead();
-            
-            if (request()->wantsJson()) {
-                return response()->json(['success' => true]);
-            }
-            
-            return redirect()->back()->with('success', 'Notification marked as read');
+            return response()->json(['success' => true]);
         }
         
-        if (request()->wantsJson()) {
-            return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
-        }
-        
-        return redirect()->back()->with('error', 'Notification not found');
+        return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
     }
     
     /**
      * Mark all notifications as read
+     * 
+     * @return \Illuminate\Http\JsonResponse
      */
     public function markAllAsRead()
     {
         $user = Auth::user();
-        $user->unreadNotifications->markAsRead();
         
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true]);
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
         }
         
-        return redirect()->back()->with('success', 'All notifications marked as read');
+        $user->unreadNotifications->markAsRead();
+        
+        return response()->json(['success' => true]);
     }
 }

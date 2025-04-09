@@ -1,7 +1,7 @@
 import useOutsideClick from '@/hooks/useOutsideClick';
-import { Link } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bell, Loader2 } from 'lucide-react';
+import { Bell, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 type Notification = {
@@ -17,6 +17,7 @@ type Notification = {
 
 type NotificationsResponse = {
     notifications: Notification[];
+    unread_count: number;
 };
 
 interface NotificationsDropdownProps {
@@ -24,35 +25,60 @@ interface NotificationsDropdownProps {
 }
 
 const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
+    const { unreadNotificationsCount } = usePage().props;
     const [isOpen, setIsOpen] = useState(false);
+    const [expandedView, setExpandedView] = useState(false);
     const queryClient = useQueryClient();
-
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     // Use the custom hook to handle outside clicks
     useOutsideClick(dropdownRef, () => {
-        if (isOpen) setIsOpen(false);
+        if (isOpen) {
+            setIsOpen(false);
+            setExpandedView(false); // Reset expanded view when closing dropdown
+        }
     }, [buttonRef]);
 
-    // Fetch notifications using React Query
-    const { data, isLoading } = useQuery<NotificationsResponse>({
-        queryKey: ['notifications', userId],
+    // Fetch preview notifications (first 5)
+    const { data: previewData, isLoading: isLoadingPreview } =
+        useQuery<NotificationsResponse>({
+            queryKey: ['notifications-preview', userId],
+            queryFn: async () => {
+                const response = await fetch('/notifications?limit=5');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json() as Promise<NotificationsResponse>;
+            },
+            enabled: isOpen, // Only fetch when dropdown is open
+            staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+        });
+
+    // Fetch all notifications
+    const {
+        data: allNotificationsData,
+        isLoading: isLoadingAll,
+        refetch: refetchAllNotifications,
+    } = useQuery<NotificationsResponse>({
+        queryKey: ['notifications-all', userId],
         queryFn: async () => {
-            const response = await fetch('/api/notifications');
+            const response = await fetch('/notifications?all=true');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             return response.json() as Promise<NotificationsResponse>;
         },
-        enabled: isOpen, // Only fetch when dropdown is open
+        enabled: false, // Don't fetch automatically, only when requested
         staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     });
 
-    const notifications = data?.notifications || [];
-    const unreadCount = notifications.filter(
-        (notification) => notification.read_at === null,
-    ).length;
+    // Get the appropriate notifications data
+    const notificationsData = expandedView ? allNotificationsData : previewData;
+    const notifications = notificationsData?.notifications || [];
+    const unreadCount =
+        notificationsData?.unread_count || previewData?.unread_count || 0;
+    const isLoading = expandedView ? isLoadingAll : isLoadingPreview;
 
     // Mark notification as read mutation
     const markAsReadMutation = useMutation({
@@ -69,27 +95,8 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
             return id;
         },
         onSuccess: (id) => {
-            // Update cache optimistically
-            queryClient.setQueryData<NotificationsResponse>(
-                ['notifications', userId],
-                (oldData) => {
-                    if (!oldData || !oldData.notifications)
-                        return oldData as NotificationsResponse;
-
-                    return {
-                        ...oldData,
-                        notifications: oldData.notifications.map(
-                            (notification) =>
-                                notification.id === id
-                                    ? {
-                                          ...notification,
-                                          read_at: new Date().toISOString(),
-                                      }
-                                    : notification,
-                        ),
-                    };
-                },
-            );
+            // Update both preview and all notifications caches
+            updateNotificationReadStatus(id);
         },
     });
 
@@ -108,28 +115,104 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
             return true;
         },
         onSuccess: () => {
-            // Update cache optimistically
-            queryClient.setQueryData<NotificationsResponse>(
-                ['notifications', userId],
-                (oldData) => {
-                    if (!oldData || !oldData.notifications)
-                        return oldData as NotificationsResponse;
-
-                    return {
-                        ...oldData,
-                        notifications: oldData.notifications.map(
-                            (notification) => ({
-                                ...notification,
-                                read_at:
-                                    notification.read_at ||
-                                    new Date().toISOString(),
-                            }),
-                        ),
-                    };
-                },
-            );
+            // Update both preview and all notifications caches
+            markAllNotificationsAsRead();
         },
     });
+
+    // Function to update notification read status in all caches
+    const updateNotificationReadStatus = (id: string) => {
+        // Update preview cache
+        queryClient.setQueryData<NotificationsResponse>(
+            ['notifications-preview', userId],
+            (oldData) => {
+                if (!oldData || !oldData.notifications)
+                    return oldData as NotificationsResponse;
+
+                return {
+                    ...oldData,
+                    notifications: oldData.notifications.map((notification) =>
+                        notification.id === id
+                            ? {
+                                  ...notification,
+                                  read_at: new Date().toISOString(),
+                              }
+                            : notification,
+                    ),
+                    unread_count: Math.max(0, oldData.unread_count - 1),
+                };
+            },
+        );
+
+        // Update all notifications cache if it exists
+        queryClient.setQueryData<NotificationsResponse>(
+            ['notifications-all', userId],
+            (oldData) => {
+                if (!oldData || !oldData.notifications)
+                    return oldData as NotificationsResponse;
+
+                return {
+                    ...oldData,
+                    notifications: oldData.notifications.map((notification) =>
+                        notification.id === id
+                            ? {
+                                  ...notification,
+                                  read_at: new Date().toISOString(),
+                              }
+                            : notification,
+                    ),
+                    unread_count: Math.max(0, oldData.unread_count - 1),
+                };
+            },
+        );
+    };
+
+    // Function to mark all notifications as read in all caches
+    const markAllNotificationsAsRead = () => {
+        // Update preview cache
+        queryClient.setQueryData<NotificationsResponse>(
+            ['notifications-preview', userId],
+            (oldData) => {
+                if (!oldData || !oldData.notifications)
+                    return oldData as NotificationsResponse;
+
+                return {
+                    ...oldData,
+                    notifications: oldData.notifications.map(
+                        (notification) => ({
+                            ...notification,
+                            read_at:
+                                notification.read_at ||
+                                new Date().toISOString(),
+                        }),
+                    ),
+                    unread_count: 0,
+                };
+            },
+        );
+
+        // Update all notifications cache if it exists
+        queryClient.setQueryData<NotificationsResponse>(
+            ['notifications-all', userId],
+            (oldData) => {
+                if (!oldData || !oldData.notifications)
+                    return oldData as NotificationsResponse;
+
+                return {
+                    ...oldData,
+                    notifications: oldData.notifications.map(
+                        (notification) => ({
+                            ...notification,
+                            read_at:
+                                notification.read_at ||
+                                new Date().toISOString(),
+                        }),
+                    ),
+                    unread_count: 0,
+                };
+            },
+        );
+    };
 
     // Format date for display
     const formatDate = (dateString: string) => {
@@ -148,6 +231,24 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
         return date.toLocaleDateString('vi-VN');
     };
 
+    // Toggle expanded view
+    const toggleExpandedView = async () => {
+        if (!expandedView) {
+            // If we're expanding, fetch all notifications first
+            await refetchAllNotifications();
+        }
+        setExpandedView(!expandedView);
+    };
+
+    // Check if we have more than preview notifications
+    const hasMoreNotifications =
+        previewData &&
+        previewData.notifications &&
+        (previewData.notifications.length === 5 || // If we have exactly 5 preview items, likely there are more
+            (allNotificationsData &&
+                allNotificationsData.notifications.length >
+                    previewData.notifications.length));
+
     return (
         <div className="relative">
             {/* Notification Button */}
@@ -157,9 +258,11 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
                 className="relative rounded-full p-2 text-white hover:bg-white/10"
             >
                 <Bell className="h-6 w-6" />
-                {unreadCount > 0 && (
+                {unreadNotificationsCount > 0 && (
                     <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                        {unreadCount > 9 ? '9+' : unreadCount}
+                        {unreadNotificationsCount > 9
+                            ? '9+'
+                            : unreadNotificationsCount}
                     </span>
                 )}
             </button>
@@ -168,7 +271,9 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-white shadow-lg"
+                    className={`absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-white shadow-lg ${
+                        expandedView ? 'max-h-[80vh]' : ''
+                    }`}
                 >
                     <div className="flex items-center justify-between border-b p-3">
                         <h3 className="font-semibold">Thông báo</h3>
@@ -183,7 +288,9 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
                         )}
                     </div>
 
-                    <div className="max-h-96 overflow-y-auto">
+                    <div
+                        className={`overflow-y-auto ${expandedView ? 'max-h-[60vh]' : 'max-h-96'}`}
+                    >
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center p-6 text-center">
                                 <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -236,15 +343,27 @@ const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) => {
                         )}
                     </div>
 
-                    <div className="border-t p-2">
-                        <Link
-                            href="/notifications"
-                            className="block rounded-md p-2 text-center text-sm text-blue-600 transition-colors hover:bg-blue-50"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            Xem tất cả thông báo
-                        </Link>
-                    </div>
+                    {hasMoreNotifications && (
+                        <div className="border-t p-2">
+                            <button
+                                onClick={toggleExpandedView}
+                                className="flex w-full items-center justify-center rounded-md p-2 text-sm text-blue-600 transition-colors hover:bg-blue-50"
+                                disabled={expandedView && isLoadingAll}
+                            >
+                                {expandedView ? (
+                                    <>
+                                        <span>Thu gọn</span>
+                                        <ChevronUp className="ml-1 h-4 w-4" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Xem tất cả thông báo</span>
+                                        <ChevronDown className="ml-1 h-4 w-4" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

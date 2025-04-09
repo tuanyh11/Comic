@@ -41,7 +41,6 @@ class CommentEvent implements ShouldBroadcastNow
         if ($this->action === 'reply' && $this->comment->parent_id) {
             // Broadcast to the user who made the original comment
             $originalComment = Comment::find($this->comment->parent_id);
-            
             if ($originalComment) {
                 $originalCommentUserId = $originalComment->user_id;
                 return [

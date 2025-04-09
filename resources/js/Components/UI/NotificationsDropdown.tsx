@@ -20,9 +20,6 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
     const notificationsData = usePage().props.notifications;
     const unreadCountData = usePage().props.unreadNotificationsCount;
 
-    // console.log('====================================');
-    // console.log(notifications);
-    // console.log('====================================');
     useEffect(() => {
         // Fetch initial notifications
         // Set up Pusher subscription
@@ -34,7 +31,6 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
         setUnreadCount(unreadCountData);
         // Subscribe to the user's private channel
         const channel = pusher.subscribe(`private-user.${userId}`);
-
         // Listen for comment.activity events
         channel.bind(
             'comment.activity',

@@ -60,6 +60,7 @@ class CommentReplyNotification extends Notification implements ShouldQueue, Shou
         return [
             'comment' => $this->comment,
             'action' => 'reply',
+            'title' => $this->comment->user->name . ' đã bình luận',
             'timestamp' => now()->toIso8601String(),
         ];
     }

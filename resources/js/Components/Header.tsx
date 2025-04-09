@@ -6,10 +6,10 @@ import { FaSearch } from 'react-icons/fa';
 // Import components
 import AuthButtons from './Header/AuthButtons';
 import MobileMenu from './Header/MobileMenu';
-import NotificationsDropdown from './Header/NotificationsDropdown';
 import SearchBar from './Header/SearchBar';
 import UserDropdown from './Header/UserDropdown';
 import WalletDropdown from './Header/WalletDropdown';
+import NotificationsDropdown from './UI/NotificationsDropdown';
 
 const Header = () => {
     const { auth, wallet } = usePage().props;
