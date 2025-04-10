@@ -6,9 +6,13 @@ import { PageProps } from '@/types';
 import { Chapter } from '@/types/custom';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { FC, useState } from 'react';
+import { FC, useEffect, useLayoutEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { CommentsSidebar } from './Partials/CommentsSidebar';
+
+type Settings = {
+    showBreadcrumb: boolean;
+};
 
 const ChapterDetail: FC = () => {
     // Get page props from Inertia
@@ -81,13 +85,7 @@ const ChapterDetail: FC = () => {
                 }),
             );
 
-            setHasVoted((prev) => {
-                const newState = !prev;
-                if (newState) {
-                    toast.success('Vote thành công');
-                }
-                return newState;
-            });
+            setHasVoted((prev) => !prev);
         } catch (error) {
             toast.error('Không thể vote. Vui lòng thử lại sau.');
         }
@@ -95,8 +93,25 @@ const ChapterDetail: FC = () => {
 
     // Toggle breadcrumb visibility
     const toggleBreadcrumb = () => {
-        setShowBreadcrumb((prev) => !prev);
+        setShowBreadcrumb((prev) => {
+            const settings = JSON.parse(
+                localStorage.getItem('settings') as unknown as string,
+            ) as Settings;
+            localStorage.setItem(
+                'settings',
+                JSON.stringify({ ...settings, showBreadcrumb: !prev }),
+            );
+            return !prev;
+        });
     };
+
+    useLayoutEffect(() => {
+        const settings = JSON.parse(
+            localStorage.getItem('settings') as unknown as string,
+        ) as Settings;
+
+        settings && setShowBreadcrumb(settings?.showBreadcrumb && true);
+    }, []);
 
     // Create breadcrumb items
     const breadcrumbItems = [

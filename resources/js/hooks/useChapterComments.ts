@@ -68,13 +68,13 @@ const useChapterComments = (chapter: Chapter, currentUser: User) => {
     const addCommentMutation = useMutation({
         mutationFn: createComment,
         onSuccess: handleCommentSuccess,
-        onError: () => toast.error('Failed to add comment'),
+        onError: () => toast.error('Lỗi khi thêm comment'),
     });
 
     const addReplyMutation = useMutation({
         mutationFn: createReply,
         onSuccess: handleReplySuccess,
-        onError: () => toast.error('Failed to add reply'),
+        onError: () => toast.error('Lỗi khi trả lời comment'),
     });
 
     // ==================== User Interactions ====================
@@ -121,7 +121,7 @@ const useChapterComments = (chapter: Chapter, currentUser: User) => {
                 }),
             );
             return response.data;
-        }, 'Failed to load comments');
+        }, 'Lỗi khi tải bình luận');
     }
 
     function getNextCommentsPage(lastPage: LaravelPagination<Comment>) {
@@ -168,16 +168,13 @@ const useChapterComments = (chapter: Chapter, currentUser: User) => {
         const parentId = newReply.parent_id;
         const repliesLoaded = Boolean(replyPaginations[parentId]);
 
-        if (repliesLoaded) {
-            addReplyToLoadedParent(newReply);
-        } else {
-            fetchReplies(parentId, 1);
-        }
+        repliesLoaded
+            ? addReplyToLoadedParent(newReply)
+            : fetchReplies(parentId, 1);
     }
 
     // ==================== Comment Management ====================
     const handleNewComment = (comment: Comment) => {
-        // Cập nhật query cache
         queryClient.setQueryData<CommentsInfiniteData | undefined>(
             commentsQueryKey,
             (oldData) =>
@@ -365,6 +362,7 @@ const useChapterComments = (chapter: Chapter, currentUser: User) => {
         repliesData: LaravelPagination<Comment>,
     ) => {
         const newComments = [...comments];
+
         const withoutExistingReplies = newComments.filter(
             (comment) => comment.parent_id !== parentId,
         );
@@ -377,9 +375,8 @@ const useChapterComments = (chapter: Chapter, currentUser: User) => {
                 repliesData,
             );
         }
-
         // Sắp xếp replies theo thứ tự mới nhất lên đầu
-        const sortedReplies = [...repliesData.data].reverse();
+        const sortedReplies = [...repliesData.data];
 
         return {
             ...oldData,

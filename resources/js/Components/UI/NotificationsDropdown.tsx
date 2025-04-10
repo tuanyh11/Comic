@@ -1,9 +1,12 @@
+import useOutsideClick from '@/hooks/useOutsideClick';
 import type { Comment, Notification } from '@/types/custom';
 import { formatDate } from '@/utils/formatDate';
 import { Link, router, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import { Bell, Check, MessageCircle } from 'lucide-react';
 import Pusher from 'pusher-js';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface NotificationsDropdownProps {
     userId: number;
@@ -23,9 +26,13 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
     useEffect(() => {
         // Fetch initial notifications
         // Set up Pusher subscription
-        const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
-            cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-        });
+        const pusher = new Pusher(
+            import.meta.env.VITE_PUSHER_APP_KEY || 'a53de8327fa510a204f6',
+            {
+                cluster: 'ap1',
+                authEndpoint: '/broadcasting/auth',
+            },
+        );
 
         setNotifications(notificationsData);
         setUnreadCount(unreadCountData);
@@ -35,6 +42,7 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
         channel.bind(
             'comment.activity',
             (data: { timestamp: string; comment: Comment; action: string }) => {
+                console.log('Received comment.activity event:', data);
                 if (data.action === 'reply') {
                     // Add the new notification to the list
                     const newNotification = {
@@ -71,29 +79,15 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
 
     const markAsRead = async (id: string) => {
         try {
-            router.post(
+            const { data } = await axios.post(
                 `/notifications/${id}/mark-as-read`,
-                {},
-                {
-                    preserveState: true,
-                    onSuccess: () => {
-                        // Update local state
-                        setNotifications(
-                            notifications.map((notification) =>
-                                notification.id === id
-                                    ? {
-                                          ...notification,
-                                          read_at: new Date().toISOString(),
-                                      }
-                                    : notification,
-                            ),
-                        );
-                        setUnreadCount((prev) => Math.max(0, prev - 1));
-                    },
-                },
+            );
+
+            setNotifications((pre) =>
+                pre.map((item) => (item.id === id ? data.data : item)),
             );
         } catch (error) {
-            console.error('Error marking notification as read:', error);
+            toast.error('Error marking notification as read:');
         }
     };
 
@@ -123,9 +117,27 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
         }
     };
 
+    const handelShowAllComment = async () => {
+        setLoading(() => true);
+        const { data } = await axios.get('/notifications?all=true');
+        setNotifications(data.notifications);
+        setLoading(() => false);
+    };
+
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    // Use the custom hook to handle outside clicks
+    useOutsideClick(dropdownRef, () => {
+        if (isOpen) {
+            setIsOpen(false);
+        }
+    }, [buttonRef]);
+
     return (
         <div className="relative">
             <button
+                ref={buttonRef}
                 onClick={() => setIsOpen(!isOpen)}
                 className="relative flex items-center justify-center text-white transition-colors hover:text-blue-100"
             >
@@ -138,7 +150,10 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-white shadow-lg">
+                <div
+                    ref={dropdownRef}
+                    className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-white shadow-lg"
+                >
                     <div className="flex items-center justify-between border-b p-3">
                         <h3 className="font-medium">Thông báo</h3>
                         {unreadCount > 0 && (
@@ -248,12 +263,12 @@ const NotificationsDropdown: FC<NotificationsDropdownProps> = ({ userId }) => {
                     </div>
 
                     <div className="border-t p-2">
-                        <Link
-                            href="/notifications"
+                        <button
+                            onClick={handelShowAllComment}
                             className="block rounded-md p-2 text-center text-sm text-blue-600 hover:bg-blue-50"
                         >
                             Xem tất cả thông báo
-                        </Link>
+                        </button>
                     </div>
                 </div>
             )}

@@ -62,7 +62,7 @@ class NotificationController extends Controller
         
         if ($notification) {
             $notification->markAsRead();
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'data' => $notification]);
         }
         
         return response()->json(['success' => false, 'message' => 'Notification not found'], 404);
@@ -83,6 +83,6 @@ class NotificationController extends Controller
         
         $user->unreadNotifications->markAsRead();
         
-        return response()->json(['success' => true]);
+        return redirect()->back();
     }
 }
