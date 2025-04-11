@@ -2,33 +2,20 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\PaymentStats;
-use App\Filament\Widgets\UserRegistrationStats;
-use App\Models\User;
-use App\Models\Payment;
-use App\Models\WalletTransaction;
-use Carbon\Carbon;
-use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Widgets\StatsOverviewWidget\Stat;
-use Filament\Widgets\StatsOverviewWidget\Card;
-use Filament\Support\Colors\Color;
-use Filament\Widgets\StatsOverviewWidget;
-use Illuminate\Support\Facades\DB;
+use App\Filament\Actions\ExportDashboardStatsAction;
+use Filament\Pages\Page;
 
-class Dashboard extends BaseDashboard
+class Dashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected function getHeaderWidgets(): array
+    protected static string $view = 'filament.pages.dashboard';
+
+    protected function getHeaderActions(): array
     {
         return [
-            UserRegistrationStats::class,
-            PaymentStats::class,
+            ExportDashboardStatsAction::make()
+                ->label('Xuất Excel có biểu đồ'),
         ];
     }
-
-    // protected function getColumns(): int
-    // {
-    //     return 2;
-    // }
 }
