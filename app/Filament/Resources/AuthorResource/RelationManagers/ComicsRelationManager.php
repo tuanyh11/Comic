@@ -20,6 +20,7 @@ class ComicsRelationManager extends RelationManager
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
+                    ->translateLabel()
                     ->maxLength(255),
             ]);
     }
@@ -29,7 +30,8 @@ class ComicsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                ->translateLabel(),
             ])
             ->filters([
                 //

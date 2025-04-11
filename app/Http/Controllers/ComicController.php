@@ -23,8 +23,8 @@ class ComicController extends Controller
     public function show($id)
     {
         $comic = ModelsComic::where('id', $id)
-            ->with(['author' => function ($query) {
-                $query->select('id', 'name');
+            ->with(['author' => function ($query)  {
+              $query->with('media.media');
             }])
             ->with(['status'])
             ->with(['chapters' => function ($query) {

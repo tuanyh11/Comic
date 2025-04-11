@@ -238,6 +238,7 @@ class ComicResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -251,8 +252,8 @@ class ComicResource extends Resource
     {
         return [
             ComicResource\RelationManagers\ChaptersRelationManager::class,
-            ComicResource\RelationManagers\GenresRelationManager::class,
-            ComicResource\RelationManagers\TagsRelationManager::class,
+            // ComicResource\RelationManagers\GenresRelationManager::class,
+            // ComicResource\RelationManagers\TagsRelationManager::class,
         ];
     }
 

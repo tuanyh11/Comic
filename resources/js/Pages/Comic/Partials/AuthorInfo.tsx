@@ -1,3 +1,4 @@
+import AuthorAvatar from '@/Components/UI/AuthorAvatar';
 import { Comic } from '@/types/custom';
 import { UserIcon } from 'lucide-react';
 import { FC } from 'react';
@@ -13,12 +14,19 @@ const AuthorInfo: FC<AuthorInfoProps> = ({
     // isFollowing,
     // toggleFollow,
 }) => {
+    console.log('====================================');
+    console.log(comic.author?.media?.[0]?.media?.url);
+    console.log('====================================');
     return (
         <div className="mt-5 flex items-center justify-between">
-            <div className="flex items-center">
-                <div className="mr-4 flex aspect-square h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-lg uppercase text-white shadow-lg">
-                    {comic.author.name[0]}
-                </div>
+            <div className="flex items-center gap-2">
+                {comic.author?.media?.[0]?.media?.url ? (
+                    <AuthorAvatar user={comic.author} size="2xl" />
+                ) : (
+                    <div className="mr-4 flex aspect-square h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-lg uppercase text-white shadow-lg">
+                        {comic.author.name[0]}
+                    </div>
+                )}
                 <div>
                     <p className="text-lg font-bold text-gray-800">
                         {comic.author.name}

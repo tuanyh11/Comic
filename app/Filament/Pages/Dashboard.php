@@ -3,6 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Actions\ExportDashboardStatsAction;
+use App\Filament\Widgets\PaymentChart;
+use App\Filament\Widgets\PaymentStats;
+use App\Filament\Widgets\UserRegistrationChart;
+use App\Filament\Widgets\UserRegistrationStats;
 use Filament\Pages\Page;
 
 class Dashboard extends Page
@@ -15,7 +19,24 @@ class Dashboard extends Page
     {
         return [
             ExportDashboardStatsAction::make()
-                ->label('Xuất Excel có biểu đồ'),
+                ->label('Export Excel')
+                ->translateLabel(true),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            PaymentStats::class,
+            UserRegistrationStats::class,
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            UserRegistrationChart::class,
+            PaymentChart::class,
         ];
     }
 }

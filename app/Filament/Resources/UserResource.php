@@ -36,10 +36,11 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make('User Information')
+                        Forms\Components\Section::make(__('Information'))
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->required()
+                                    ->translateLabel()
                                     ->maxLength(255),
                             
                                 Forms\Components\TextInput::make('email')
@@ -50,6 +51,7 @@ class UserResource extends Resource
                             
                                 Forms\Components\TextInput::make('password')
                                     ->password()
+                                    ->translateLabel()
                                     ->dehydrateStateUsing(fn ($state) => 
                                         filled($state) ? Hash::make($state) : null)
                                     ->dehydrated(fn ($state) => filled($state))
@@ -58,6 +60,8 @@ class UserResource extends Resource
                               
                             CuratorPicker::make('document_ids')
                                     ->multiple()
+                                    ->translateLabel()
+                                    ->acceptedFileTypes(['image/*'])
                                     ->label('Avatar')
                                     ->relationship('media', 'id')
                                     ->orderColumn('order') // Optional: Rename the order column if needed
@@ -73,18 +77,21 @@ class UserResource extends Resource
                 
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Roles & Permissions')
+                        Forms\Components\Section::make(__('Roles & Permissions'))
                             ->schema([
                                 Forms\Components\CheckboxList::make('roles')
+                                    ->label('Roles')
+                                    ->translateLabel()
                                     ->relationship('roles', 'name')
                                     ->searchable()
                                     ->columnSpanFull(),
                             ]),
                         
-                        Forms\Components\Section::make('Wallet')
+                        Forms\Components\Section::make(__('Wallet'))
                             ->schema([
                                 Forms\Components\Placeholder::make('wallet_balance')
                                     ->label('Balance')
+                                    ->translateLabel()
                                     // ->content(fn (User $record): string => 
                                     //     number_format($record->wallet?->balance ?? 0) . ' VND'),
                             ]),
@@ -100,6 +107,7 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('media.media.url')
                     ->label('Avatar')
+                    ->translateLabel()
                     ->circular()
                     ->defaultImageUrl(fn () => asset('images/user-placeholder.jpg')),
                 
@@ -117,11 +125,6 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(),
                 
-                Tables\Columns\TextColumn::make('purchasedChapters.count')
-                    ->counts('purchasedChapters')
-                    ->label('Purchases')
-                    ->sortable()
-                    ->toggleable(),
                 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

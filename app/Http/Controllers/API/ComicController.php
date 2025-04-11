@@ -17,40 +17,40 @@ class ComicController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function search(Request $request)
-    {
-        $query = $request->input('q');
-        
-        if (empty($query)) {
-            return response()->json([
-                'comics' => []
-            ]);
-        }
-
-        // Cache kết quả tìm kiếm trong 1 giờ
-        $cacheKey = 'comic_search_' . md5($query);
-        
-        $comics = Cache::remember($cacheKey, 60 * 60, function () use ($query) {
-            return Comic::where('title', 'LIKE', "%{$query}%")
-                ->orWhereHas('author', function($q) use ($query) {
-                    $q->where('name', 'LIKE', "%{$query}%");
-                })
-                ->with(['author' => function ($q) {
-                    $q->select('id', 'name');
-                }])
-                ->with('thumbnail')
-                ->withCount(['chapters as total_chapters'])
-                ->withCount(['chapters as read_count' => function ($query) {
-                    $query->select(DB::raw('SUM(read_count)'));
-                }])
-                ->limit(10)
-                ->get();
-        });
-
+public function search(Request $request)
+{
+    $query = $request->input('q');
+    
+    if (empty($query)) {
         return response()->json([
-            'comics' => $comics
+            'comics' => []
         ]);
     }
+
+    // Cache kết quả tìm kiếm trong 1 giờ
+    $cacheKey = 'comic_search_' . md5($query);
+    
+    $comics = Cache::remember($cacheKey, 60 * 60, function () use ($query) {
+        return Comic::where(DB::raw('LOWER(title)'), 'LIKE', '%' . strtolower($query) . '%')
+            ->orWhereHas('author', function($q) use ($query) {
+                $q->where(DB::raw('LOWER(name)'), 'LIKE', '%' . strtolower($query) . '%');
+            })
+            ->with(['author' => function ($q) {
+                $q->select('id', 'name');
+            }])
+            ->with('thumbnail')
+            ->withCount(['chapters as total_chapters'])
+            ->withCount(['chapters as read_count' => function ($query) {
+                $query->select(DB::raw('SUM(read_count)'));
+            }])
+            ->limit(10)
+            ->get();
+    });
+
+    return response()->json([
+        'comics' => $comics
+    ]);
+}
 
     /**
      * Lấy danh sách truyện được đề xuất dựa trên tag và truyện hiện tại
